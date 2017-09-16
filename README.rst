@@ -18,7 +18,13 @@ gdal_build_debug
      :alt: Updates
 
 
-A pytest suite to test whether gdal built with what you wanted
+A pytest suite to test whether gdal built with what you wanted.
+
+USAGE
++++++
+
+This is to be used on the command line::
+  gdal_build_debug [gdal_source_directory] [flags]
 
 
 * Free software: MIT license
@@ -28,7 +34,11 @@ A pytest suite to test whether gdal built with what you wanted
 Features
 --------
 
-* TODO
+* parse argv
+* parse arg
+* static log tests
+* dynamic tests
+* test fixtures to mock logs, dynamic logs
 
 Credits
 ---------
@@ -37,4 +47,3 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
-
