@@ -20,6 +20,8 @@ gdal_build_debug
 
 A pytest suite to test whether gdal built with what you wanted.
 
+https://trac.osgeo.org/gdal/wiki/BuildingOnUnix
+
 USAGE
 +++++
 
