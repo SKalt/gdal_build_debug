@@ -15,9 +15,6 @@ def parse(url):
             # print(cell.xpath('.//text()'))
             _row.append(' '.join(cell.xpath('.//text()')).strip())
         processed_rows.append(_row)
-    for row in processed_rows:
-        if len(row) != len(header):
-            print(row)
     ogr = 'ogr' if 'ogr' in url else 'gdal'
     pd.DataFrame(processed_rows).to_csv(
         ogr + '_formats.csv', index=False, header=header
