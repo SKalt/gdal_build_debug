@@ -43,6 +43,18 @@ def pytest_addoption(parser):
         help='includes a test of that the command-line gdal version' +
         ' is equal to input'
     )
+    parser.addoption(
+        '--test-config', action='store_true', default=True,
+        help='include tests on your config log'
+    )
+    parser.addoption(
+        '--test-cli', action='store_true', default=False,
+        help='include tests on the gdal/ogrinfo reacheable from the command' +
+        'line'
+    )
+    # parser.addoption(
+    #     '--mode', action='store', default='gdal', help='ogr or gdal'
+    # )
 
 
 def pytest_generate_tests(metafunc):
@@ -55,19 +67,15 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_collection_modifyitems(config, items):
-    version = config.getoption('--test-version')
-    path = config.getoption('--test-path')
-    if not version:
-        skip_version = pytest.mark.skip(reason="needs --test-version to run")
-        for item in items:
-            if 'test_version' in item.keywords:
-                item.add_marker(skip_version)
-    if not path:
-        skip_path = pytest.mark.skip(reason="needs --test-path to run")
-        for item in items:
-            if 'test_path' in item.keywords:
-                item.add_marker(skip_path)
-
+    for _test in ['version', 'path', 'cli']:
+        _test_value = config.getoption('--test-' + _test)
+        if not _test_value:
+            skip = pytest.mark.skip(
+                reason='needs --test-{} to run'.format(_test)
+            )
+            for item in items:
+                if 'test_' + _test in item.keywords:
+                    item.add_marker(skip)
 
 @pytest.fixture
 def config_log_file(conf_log_path):
