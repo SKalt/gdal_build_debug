@@ -2,6 +2,7 @@
 import subprocess
 import pytest
 import os
+import re
 import pandas as pd
 
 
@@ -59,3 +60,11 @@ def test_format_excluded(format_to_check, lookup):
         raise ValueError(format_to_check + ' is included')
     else:
         assert True
+
+
+@pytest.mark.test_cli
+@pytest.mark.test_version_is
+def test_version_is(version_to_check):
+    version_to_check = version_to_check.replace('.', '\.')
+    output = subprocess.run(['gdalinfo', '--version'], stdout=subprocess.PIPE)
+    assert re.match(version_to_check, output.stdout.decode())
