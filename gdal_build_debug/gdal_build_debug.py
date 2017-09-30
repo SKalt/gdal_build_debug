@@ -29,10 +29,18 @@ def search_config(config_log, support, *mo_re):
     tests
     """
     regex = re.compile(
-        pattern='|'.join([r'({})'.format(i) for i in [support] + list(mo_re)])
+        r'(?ims)(?P<support>{support})'.format(support=support) +
+        ''.join([r'|({})'.format(i) for i in mo_re])
     )
     lines = ''
     for num, line in enumerate(config_log.split('\n')):
-        if regex.match(line):
+        if regex.search(line):
             lines += '{}\t{}\n'.format(num + 1, line)
     return lines
+
+
+if __name__ == '__main__':
+    with open('../tests/fixtures/configure.log') as f:
+        config_log = f.read()
+    #   print(config_log)
+    print(search_config(config_log, 'DDS'))
