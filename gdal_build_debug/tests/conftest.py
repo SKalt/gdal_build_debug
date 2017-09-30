@@ -80,8 +80,9 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
+    print(metafunc.fixturenames)
 
-    def sort_formats(cli, include=True):
+    def sort_formats(cli):
         'Sort arguments by their belonging to ogr and/or GDAL'
         for include in [True, False]:
             fixture_name = cli + '_format' + ('' if include else '_excluded')
@@ -99,30 +100,41 @@ def pytest_generate_tests(metafunc):
                 metafunc.parametrize(fixture_name, formats, scope='session')
 
     _support = ('support', 'no_support')
-    if any(map(lambda x: x in metafunc.fixturenames, _support)):
-        with open(os.path.join(__location__, '..', 'supported.txt')) as f:
-            libs = set([i.strip().lower() for i in f.read().split('\n')])
-        for included in [True, False]:
-            support = ('no_' if included else '') + 'support'
-            if support in metafunc.fixturenames:
-                included = metafunc.config.getoption(
-                    'with' + ('' if included else 'out')
-                )
-                supported = list(libs.intersection(included))
-                metafunc.parametrize(support, supported, scope='session')
+    # print(metafunc.fixturenames)
+    # if any(map(lambda x: x in metafunc.fixturenames, _support)):
+    assert metafunc.config.getoption('--test-dependencies')
+    with open(os.path.join(__location__, '..', 'supported.txt')) as f:
+        libs = set([i.strip().lower() for i in f.read().split('\n')])
+    for included in [True, False]:
+        support = ('no_' if included else '') + 'support'
+        if support in metafunc.fixturenames:
+            included = metafunc.config.getoption(
+                'with' + ('' if included else 'out')
+            )
+            supported = list(libs.intersection(included))
+            metafunc.parametrize(support, supported, scope='session')
+        else:
+            print(metafunc.fixturenames)
+
+    # else:
+    #     print(metafunc.fixturenames)
+    #     assert 0
     for cli in ['ogr', 'gdal']:
         sort_formats(cli)
 
 
 def pytest_collection_modifyitems(config, items):
     "skip non-requested sub-suites of tests"
+    print(dir(config), '\n\n', dir(items), '\n\n', items)
     for _test in ['version-is', 'formats', 'dependencies']:
         _test_value = config.getoption('--test-' + _test)
+        print(_test, _test_value)
         if not _test_value:
             skip = pytest.mark.skip(
                 reason='needs --test-{} to run'.format(_test)
             )
             for item in items:
+                print(item, [i for i in item.keywords.items()])
                 if 'test_' + _test.replace('-', '_') in item.keywords:
                     item.add_marker(skip)
 

@@ -38,7 +38,6 @@ import pandas as pd
 #
 #     return formats()
 
-
 def check_format_installed(cli, to_check):
     "Checks a foramt is installed"
     subprocess.run([cli, '--format', to_check], check=True)
