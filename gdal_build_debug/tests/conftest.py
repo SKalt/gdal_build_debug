@@ -31,19 +31,27 @@ def pytest_addoption(parser):
     Add command-line options for Pytest to parse.
     """
     parser.addoption(
-        '--with', action='append', default=[],
+        '--with-gdal-format', action='append', default=[],
         help='libs to test are included'  # TODO: eloquence
     )
     parser.addoption(
-        '--without', action='append', default=[],
-        help='libs to test are excluded'
+        '--with-ogr-format', action='append', default=[],
+        help='libs to test are included'  # TODO: eloquence
     )
     parser.addoption(
-        '--supported', action='append', default=[],
+        '--without-gdal-format', action='append', default=[],
+        help='libs to test are included'  # TODO: eloquence
+    )
+    parser.addoption(
+        '--without-ogr-format', action='append', default=[],
+        help='libs to test are included'  # TODO: eloquence
+    )
+    parser.addoption(
+        '--with-dependency', action='append', default=[],
         help='dependencies to test are met'
     )
     parser.addoption(
-        '--not-enabled', action='append', default=[],
+        '--without-dependency', action='append', default=[],
         help='libs to test are excluded'
     )
     parser.addoption(
@@ -51,7 +59,7 @@ def pytest_addoption(parser):
         help='path to configuration logs'
     )
     parser.addoption(
-        '--test-version-is', action='store_true',
+        '--test-version-is', action='store',
         default=False, help='includes test that command-line gdal version' +
         ' is equal to input'
     )
@@ -80,61 +88,34 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    print(metafunc.fixturenames)
+    def included(fixture):
+        return fixture in metafunc.fixturenames
 
-    def sort_formats(cli):
-        'Sort arguments by their belonging to ogr and/or GDAL'
-        for include in [True, False]:
-            fixture_name = cli + '_format' + ('' if include else '_excluded')
-            if fixture_name in metafunc.fixturenames:
-                inclusion = 'with' + ('' if include else 'out')
-                __cluded_formats = set(metafunc.config.getoption(inclusion))
-                cli_formats = set(
-                    pd.read_csv(
-                        os.path.join(
-                            __location__, '..', cli + '_formats.csv'
-                        )
-                    )['Code'].apply(lambda code: code.lower().strip())
-                )
-                formats = list(__cluded_formats.intersection(cli_formats))
-                metafunc.parametrize(fixture_name, formats, scope='session')
-
-    _support = ('support', 'no_support')
-    # print(metafunc.fixturenames)
-    # if any(map(lambda x: x in metafunc.fixturenames, _support)):
-    assert metafunc.config.getoption('--test-dependencies')
-    with open(os.path.join(__location__, '..', 'supported.txt')) as f:
-        libs = set([i.strip().lower() for i in f.read().split('\n')])
-    for included in [True, False]:
-        support = ('no_' if included else '') + 'support'
-        if support in metafunc.fixturenames:
-            included = metafunc.config.getoption(
-                'with' + ('' if included else 'out')
-            )
-            supported = list(libs.intersection(included))
-            metafunc.parametrize(support, supported, scope='session')
-        else:
-            print(metafunc.fixturenames)
-
-    # else:
-    #     print(metafunc.fixturenames)
-    #     assert 0
-    for cli in ['ogr', 'gdal']:
-        sort_formats(cli)
+    def include(fixture, name):
+        if included(fixture):
+            metafunc.parametrize(fixture, metafunc.config.getoption(name))
+    #print(metafunc.config.option)
+    #include('version_is', 'test_version_is')
+    include('gdal_format', 'with_gdal_format')
+    include('gdal_format_excluded', 'without_gdal_format')
+    include('ogr_format', 'with_ogr_format')
+    include('ogr_format_excluded', 'without_gdal_format')
+    include('support', 'with_dependency')
+    include('no_support', 'without_dependency')
 
 
 def pytest_collection_modifyitems(config, items):
     "skip non-requested sub-suites of tests"
-    print(dir(config), '\n\n', dir(items), '\n\n', items)
+    #print(dir(config), '\n\n', dir(items), '\n\n', items)
     for _test in ['version-is', 'formats', 'dependencies']:
         _test_value = config.getoption('--test-' + _test)
-        print(_test, _test_value)
+        #print(_test, _test_value)
         if not _test_value:
             skip = pytest.mark.skip(
                 reason='needs --test-{} to run'.format(_test)
             )
             for item in items:
-                print(item, [i for i in item.keywords.items()])
+                #print(item, [i for i in item.keywords.items()])
                 if 'test_' + _test.replace('-', '_') in item.keywords:
                     item.add_marker(skip)
 
@@ -152,3 +133,7 @@ def config_log(request):
     conf_log_path = request.config.getoption('--path-to-config-log')
     with open(conf_log_path) as conf_log_file:
         return conf_log_file.read()
+
+@pytest.fixture
+def version_is(request):
+    return request.config.getoption('--test-version-is')

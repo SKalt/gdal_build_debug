@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import click
+from pandas import read_csv
 
 __location__ = os.path.realpath(
     os.path.join(
@@ -14,13 +15,40 @@ __location__ = os.path.realpath(
 )
 
 
-@click.group()
-@click.pass_context
-def main(ctx):
-    """Console script for gdal_build_debug."""
+def _get_csv(cli):
+    return set(
+        read_csv(
+            os.path.join(
+                __location__, cli + '_formats.csv'
+            )
+        )['Code'].apply(lambda code: code.lower().strip())
+    )
+
+
+def sort(fmt):
+    "sorts --with and --without by belonging to ogr/gdal / the dependencies"
     pass
-    # TODO: use an option to format a config command, build command
-    # TODO: delegate to helpers like 'search_config' here
+
+
+@click.group()
+@click.option('--with', 'include', multiple=True, help='A dependancy or ' +
+              'format to test is included in the gdal build'
+              )
+@click.option('--without', 'exclude', multiple=True, help='A dependancy or ' +
+              'format to test is excluded in the gdal build'
+              )
+@click.pass_context
+def main(ctx, include, exclude):
+    """Console script for gdal_build_debug."""
+    include = [i.lower() for i in include]
+    exclude = [i.lower() for i in exclude]
+    ctx.obj['INCLUDED_FORMATS_GDAL'] = gdal.intersection(include)
+    ctx.obj['EXCLUDED_FORMATS_GDAL'] = gdal.intersection(exclude)
+    ctx.obj['INCLUDED_FORMATS_OGR'] = ogr.intersection(include)
+    ctx.obj['EXCLUDED_FORMATS_OGR'] = ogr.intersection(exclude)
+    ctx.obj['INCLUDED_DEPENDENCIES'] = dependencies.intersection(include)
+    ctx.obj['EXCLUDED_DEPENDENCIES'] = dependencies.intersection(exclude)
+
 
 @main.command()
 @click.option(
@@ -45,38 +73,50 @@ def main(ctx):
 @click.argument('args', nargs=-1)
 @click.pass_context
 def test(ctx, config_log_path, dependencies, formats, version_is, args):
-    include_test = re.compile(r'(?i)^with[-:=](?P<lib_or_format>\w+)')
-    exclude_test = re.compile(r'(?i)^without[-:=](?P<lib_or_format>\w+)')
-    included = []
-    excluded = []
-    print(config_log_path)
-    for arg in args:
-        _include = re.search(include_test, arg)
-        if _include and _include.group('lib_or_format'):
-            included.append(_include.group('lib_or_format'))
-            continue
-        _exclude = re.search(exclude_test, arg)
-        if _exclude and _exclude.group('lib_or_format'):
-            excluded.append(_exclude.group('lib_or_format'))
-            continue
-        else:
-            included.append(arg)
-    ctx.obj['INCLUDED'] = included
-    ctx.obj['EXCLUDED'] = excluded
+
+    def map_to_options(arg_name, ctx_name):
+        print(arg_name, ctx.obj[ctx_name], '\n\n')
+        return [arg_name + '=' + arg for arg in ctx.obj[ctx_name]]
+
     tests = ['--path-to-config-log=' + i for i in [config_log_path] if i]
     tests += ['--version-is=' + str(version_is) if version_is else '']
-    tests += ['--test-dependencies' if dependencies else '']
-    tests += ['--test-formats' if formats else '']
-    tests += [
-        *map(lambda arg: '--with=' + arg, included),
-        *map(lambda arg: '--without=' + arg, excluded)
-    ]
-    print(tests)
+    if formats:
+        tests += ['--test-formats']
+        tests += map_to_options(
+            '--with-ogr-format',
+            'INCLUDED_FORMATS_OGR'
+        )
+        tests += map_to_options(
+            '--without-ogr-format',
+            'EXCLUDED_FORMATS_OGR'
+        )
+        tests += map_to_options(
+            '--with-gdal-format',
+            'INCLUDED_FORMATS_GDAL'
+        )
+        tests += map_to_options(
+            '--without-gdal-format',
+            'EXCLUDED_FORMATS_GDAL'
+        )
+    if dependencies:
+        tests += ['--test-dependencies']
+        tests += map_to_options(
+            '--with-dependency',
+            'INCLUDED_DEPENDENCIES'
+        )
+        tests += map_to_options(
+            '--without-dependency',
+            'EXCLUDED_DEPENDENCIES'
+        )
+    print(tests, '************')
     subprocess.run(
         ['pytest', __location__, *[test for test in tests if test]]
     )
 
 
-
 if __name__ == "__main__":
+    ogr = _get_csv('ogr')
+    gdal = _get_csv('gdal')
+    with open(os.path.join(__location__, 'supported.txt')) as f:
+        dependencies = set([i.strip().lower() for i in f.read().split('\n')])
     main(obj={})

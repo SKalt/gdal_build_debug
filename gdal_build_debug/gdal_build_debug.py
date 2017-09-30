@@ -23,7 +23,7 @@ def check_support_line(num, line, support_lib, regex, mode='string'):
             return AssertionError(msg)
 
 
-def search_config(config_log, support, *mo_re):
+def search_config_log(config_log, support, *mo_re):
     """
     Returns all lines & numbers matching the named support or additional regex
     tests
@@ -37,10 +37,3 @@ def search_config(config_log, support, *mo_re):
         if regex.search(line):
             lines += '{}\t{}\n'.format(num + 1, line)
     return lines
-
-
-if __name__ == '__main__':
-    with open('../tests/fixtures/configure.log') as f:
-        config_log = f.read()
-    #   print(config_log)
-    print(search_config(config_log, 'DDS'))

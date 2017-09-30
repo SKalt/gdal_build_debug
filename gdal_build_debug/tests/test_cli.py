@@ -77,7 +77,7 @@ def test_ogr_format_excluded(ogr_format_excluded):
 
 @pytest.mark.test_cli
 @pytest.mark.test_version_is
-def test_version_is(version_to_check):
+def test_version_is(version_is):
     version_to_check = version_to_check.replace('.', '\.')
     output = subprocess.run(['gdalinfo', '--version'], stdout=subprocess.PIPE)
     assert re.match(version_to_check, output.stdout.decode())

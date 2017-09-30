@@ -1,6 +1,7 @@
 import re
 import os
 import pytest
+from ..gdal_build_debug import search_config_log as search_config_log
 
 
 @pytest.fixture(scope='module')  # deprecated -> redundant
@@ -22,16 +23,13 @@ def supported_libs():
             )
         )
 
-def test_args(config_log, support, supported_libs, informative):
-    print(config_log and True, support, supported_libs, informative)
-    assert 0
+# def test_args(config_log, support, supported_libs, informative):
+#     print(config_log and True, support, supported_libs, informative)
+#     assert 0
 
 def raise_informative_error(config_log, support, *mo_re):
-    regex = '|'.join([r'({})'.format(i) for i in [support] + list(mo_re)])
-    informative_error = ''
-    for num, line in enumerate(config_log.split('\n')):
-        if regex.match(line):
-            informative_error += '{}\t{}\n'.format(num + 1, line)
+    informative_error = search_config_log(config_log, support, *mo_re)
+    raise ValueError(informative_error)
 
 
 @pytest.mark.test_dependencies
