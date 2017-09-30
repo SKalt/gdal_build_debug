@@ -1,7 +1,13 @@
+import os
 import pytest
-# import re
+import pandas as pd
 
-
+__location__ = os.path.realpath(
+    os.path.join(
+        os.getcwd(),
+        os.path.dirname(__file__)
+    )
+)
 # def pytest_cmdline_preparse(args):
 #     ''
 #     regex = re.compile(r'--(?P<inclusion>with(out)?)-(?P<lib>\S+)')
@@ -74,12 +80,38 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    if 'included' in metafunc.fixturenames:
-        included = list(set(metafunc.config.getoption('with')))
-        metafunc.parametrize('included', included, scope='session')
-    if 'excluded_lib' in metafunc.fixturenames:
-        excluded_libs = list(set(metafunc.config.option.without))
-        metafunc.parametrize('excluded_lib', excluded_libs, scope='session')
+
+    def sort_formats(cli, include=True):
+        'Sort arguments by their belonging to ogr and/or GDAL'
+        for include in [True, False]:
+            fixture_name = cli + '_format' + ('' if include else '_excluded')
+            if fixture_name in metafunc.fixturenames:
+                inclusion = 'with' + ('' if include else 'out')
+                __cluded_formats = set(metafunc.config.getoption(inclusion))
+                cli_formats = set(
+                    pd.read_csv(
+                        os.path.join(
+                            __location__, '..', cli + '_formats.csv'
+                        )
+                    )['Code'].apply(lambda code: code.lower().strip())
+                )
+                formats = list(__cluded_formats.intersection(cli_formats))
+                metafunc.parametrize(fixture_name, formats, scope='session')
+
+    _support = ('support', 'no_support')
+    if any(map(lambda x: x in metafunc.fixturenames, _support)):
+        with open(os.path.join(__location__, '..', 'supported.txt')) as f:
+            libs = set([i.strip().lower() for i in f.read().split('\n')])
+        for included in [True, False]:
+            support = ('no_' if included else '') + 'support'
+            if support in metafunc.fixturenames:
+                included = metafunc.config.getoption(
+                    'with' + ('' if included else 'out')
+                )
+                supported = list(libs.intersection(included))
+                metafunc.parametrize(support, supported, scope='session')
+    for cli in ['ogr', 'gdal']:
+        sort_formats(cli)
 
 
 def pytest_collection_modifyitems(config, items):
@@ -93,6 +125,7 @@ def pytest_collection_modifyitems(config, items):
             for item in items:
                 if 'test_' + _test.replace('-', '_') in item.keywords:
                     item.add_marker(skip)
+
 
 @pytest.fixture
 def informative(request):

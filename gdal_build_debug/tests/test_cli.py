@@ -6,59 +6,74 @@ import re
 import pandas as pd
 
 
-@pytest.fixture(scope="module")
-def lookup():
-    class formats(object):
-        "Holds gdal/ogr format infomration"
-        def __init__(self):
-            __location__ = os.path.realpath(
-                os.path.join(
-                    os.getcwd(),
-                    os.path.dirname(__file__)
-                )
-            )
-            self.gdal = pd.read_csv(
-                os.path.join(__location__, '..', 'gdal_formats.csv')
-            )
-            self.ogr = pd.read_csv(
-                os.path.join(__location__, '..', 'ogr_formats.csv')
-            )
-            self.ogr_codes = set(self.ogr['Code'].apply(lambda x: x.lower()))
-            self.gdal_codes = set(self.gdal['Code'].apply(lambda x: x.lower()))
+# @pytest.fixture(scope="module")
+# def lookup():
+#     class formats(object):
+#         "Holds gdal/ogr format infomration"
+#         def __init__(self):
+#             __location__ = os.path.realpath(
+#                 os.path.join(
+#                     os.getcwd(),
+#                     os.path.dirname(__file__)
+#                 )
+#             )
+#             self.gdal = pd.read_csv(
+#                 os.path.join(__location__, '..', 'gdal_formats.csv')
+#             )
+#             self.ogr = pd.read_csv(
+#                 os.path.join(__location__, '..', 'ogr_formats.csv')
+#             )
+#             self.ogr_codes = set(self.ogr['Code'].apply(lambda x: x.lower()))
+#             self.gdal_codes = set(self.gdal['Code'].apply(lambda x: x.lower()))
+#
+#         def format(self, fmt):
+#             "Returns ogr/gdal, depending on which supports the supplied format"
+#             fmt = fmt.lower()
+#             if fmt in self.ogr_codes:
+#                 return 'ogr'
+#             elif fmt in self.gdal_codes:
+#                 return 'gdal'
+#             else:
+#                 raise AssertionError(fmt + ' is not supported by gdal/ogr')
+#
+#     return formats()
 
-        def format(self, fmt):
-            "Returns ogr/gdal, depending on which supports the supplied format"
-            fmt = fmt.lower()
-            if fmt in self.ogr_codes:
-                return 'ogr'
-            elif fmt in self.gdal_codes:
-                return 'gdal'
-            else:
-                raise AssertionError(fmt + ' is not supported by gdal/ogr')
 
-    return formats()
-
-
-@pytest.mark.test_cli
-def test_format_installed(included, lookup):
+def check_format_installed(cli, to_check):
     "Checks a foramt is installed"
-    mode = lookup.format(included) + 'info'
-    subprocess.run([mode, '--format', included], check=True)
+    subprocess.run([cli, '--format', to_check], check=True)
 
 
 @pytest.mark.test_cli
-def test_format_excluded(included, lookup):
-    "Checks a format is excluded from the buid"
-    mode = lookup.format(included) + 'info'
-    included = True
+def test_gdal_format_installed(gdal_format):
+    "Checks a format is installed"
+    check_format_installed('gdalinfo', gdal_format)
+
+
+@pytest.mark.test_cli
+def test_ogr_format_installed(ogr_format):
+    "Checks a format is installed"
+    check_format_installed('ogrinfo', ogr_format)
+
+
+def check_format_excluded(cli, to_check):
     try:
-        subprocess.run([mode, '--format', included], check=True)
+        check_format_installed(cli, to_check)
+        installed = True
     except subprocess.CalledProcessError:
-        included = False
-    if included:
-        raise ValueError(included + ' is included')
-    else:
-        assert True
+        installed = False
+    assert not installed
+
+
+@pytest.mark.test_cli
+def test_gdal_format_excluded(gdal_format_excluded):
+    "Checks a format is excluded from the buid"
+    check_format_excluded('gdalinfo', gdal_format_excluded)
+
+
+@pytest.mark.test_cli
+def test_ogr_format_excluded(ogr_format_excluded):
+    check_format_excluded('ogrinfo', ogr_format_excluded)
 
 
 @pytest.mark.test_cli

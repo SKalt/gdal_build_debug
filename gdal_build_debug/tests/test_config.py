@@ -3,7 +3,7 @@ import os
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='module')  # deprecated -> redundant
 def supported_libs():
     __location__ = os.path.realpath(
         os.path.join(
@@ -32,22 +32,22 @@ def raise_informative_error(config_log, support, *mo_re):
 
 
 @pytest.mark.test_config
-def test_supported(config_log, included, supported_libs, informative):
+def test_supported(config_log, support, supported_libs, informative):
     """
     Given a lib name and a config log, check if the config succeeded. Else,
     output lines relevant to the lib
     """
-    if included not in supported_libs:
-        print(included + 'is not among testable support libraries')
+    if support not in supported_libs:
+        print(support + 'is not among testable support libraries')
         return
-    regex_test = r'(?ims){}.*support:\W*(?P<response>\w+)'.format(included)
+    regex_test = r'(?ims){}.*support:\W*(?P<response>\w+)'.format(support)
     matches = re.findall(regex_test, config_log)
     try:
         assert all(map(lambda x: x in ['yes', 'internal'], matches))
         assert matches
     except AssertionError:
-        print('no {} support'.format(included))
+        print('no {} support'.format(support))
         if informative:
-            raise_informative_error(config_log, included)
+            raise_informative_error(config_log, support)
         else:
-            raise AssertionError('no {} support'.format(included))
+            raise AssertionError('no {} support'.format(support))
