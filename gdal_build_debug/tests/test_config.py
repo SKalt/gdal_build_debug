@@ -1,27 +1,53 @@
 import re
+import os
+import pytest
 
 
-def test_lib_included_in_config(config_log, included_lib, internal=True,
-                                *more_re
-                                ):
+@pytest.fixture(scope='module')
+def supported_libs():
+    __location__ = os.path.realpath(
+        os.path.join(
+            os.getcwd(),
+            os.path.dirname(__file__)
+        )
+    )
+    with open(os.path.join(__location__, '..', 'supported.txt')) as supported:
+        return set(
+            filter(
+                lambda x: x,
+                map(
+                    lambda x: x.lower().strip(),
+                    supported.read().split('\n')
+                )
+            )
+        )
+
+
+def raise_informative_error(config_log, support, *mo_re):
+    regex = '|'.join([r'({})'.format(i) for i in [support] + list(mo_re)])
+    informative_error = ''
+    for num, line in enumerate(config_log.split('\n')):
+        if regex.match(line):
+            informative_error += '{}\t{}\n'.format(num + 1, line)
+
+
+@pytest.mark.test_config
+def test_supported(config_log, included, supported_libs, informative):
     """
     Given a lib name and a config log, check if the config succeeded. Else,
     output lines relevant to the lib
     """
-    # open log, read log as log
-    lib = included_lib
-    regex_test = r'(?ims)\W*{} support:\W*(?P<response>\w+)'.format(lib)
+    if included not in supported_libs:
+        print(included + 'is not among testable support libraries')
+        return
+    regex_test = r'(?ims){}.*support:\W*(?P<response>\w+)'.format(included)
     matches = re.findall(regex_test, config_log)
-    assert matches
     try:
         assert all(map(lambda x: x in ['yes', 'internal'], matches))
+        assert matches
     except AssertionError:
-        more_re = [included_lib] + more_re
-        tests = map(lambda x: '^.*({}).*\.{3}.*$'.format(x), more_re)
-        new_regex_test = r'(?im)({})'.format('|'.join(tests))
-        informative_error = ''
-        for num, line in config_log.split('\n'):
-            if new_regex_test.match(line):
-                informative_error += '{}\t{}\n'.format(num + 1, line)
-        print(informative_error)
-        raise AssertionError(included_lib + ' not included')
+        print('no {} support'.format(included))
+        if informative:
+            raise_informative_error(config_log, included)
+        else:
+            raise AssertionError('no {} support'.format(included))

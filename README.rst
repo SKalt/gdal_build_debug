@@ -18,7 +18,8 @@ gdal_build_debug
      :alt: Updates
 
 
-A pytest suite to test whether gdal built with what you wanted.
+A pytest suite to test whether gdal built with the dependencies and formats you
+want.
 
 https://trac.osgeo.org/gdal/wiki/BuildingOnUnix
 
@@ -26,7 +27,33 @@ USAGE
 +++++
 
 This is to be used on the command line::
-  gdal_build_debug [gdal_source_directory] [flags]
+gdal_build_debug [OPTIONS] COMMAND [ARGS]...
+
+Options:
+--help  Show this message and exit.
+
+Commands:
+test
+
+EXAMPLES
+--------
+gdal_build_debug test --formats with:postgis
+gdal_build_debug test --formats without:postgis
+gdal_build_debug test --formats with:postgis without:spatialite
+
+gdal_build_debug test --dependencies with:spatialite
+gdal_build_debug test --dependencies --formats with:geos with:geojson
+# tests whether the configuration log includes the GEOS dependency and the command line supports the geojson format
+
+gdal_build_debug test --version-is=2.2.*
+# match the version via regex
+
+
+
+
+
+
+
 
 
 * Free software: MIT license
@@ -36,11 +63,6 @@ This is to be used on the command line::
 Features
 --------
 
-* parse argv
-* parse arg
-* static log tests
-* dynamic tests
-* test fixtures to mock logs, dynamic logs
 
 Credits
 ---------
