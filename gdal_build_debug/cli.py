@@ -25,7 +25,7 @@ __location__ = os.path.realpath(
 
 def debrine(cli):
     "load pickled sets of normalized format codes"
-    with open(cli + '_formats_set.pkl', 'rb') as pkl:
+    with open(__location__ + '/' + cli + '_formats_set.pkl', 'rb') as pkl:
         return pickle.load(pkl)
 
 

@@ -9,9 +9,11 @@ __location__ = os.path.realpath(
     )
 )
 
+
 @pytest.fixture(scope='module')
 def call_cli():
     return ['python', __location__ + '/../gdal_build_debug/cli.py']
+
 
 @pytest.fixture(scope='module')
 def options():
@@ -30,10 +32,12 @@ def test_single_inclusion(call_cli, options):
     )
     assert '1 passed' in completed.stdout.decode()
 
+
 def test_multiple_inclusions(call_cli, options):
     completed = subprocess.run(
-        call_cli + ['--with=GEOS', '--with=grib'] + options, stdout=subprocess.PIPE,
+        call_cli + ['--with=GEOS', '--with=grib'] + options,
+        stdout=subprocess.PIPE,
         check=True
     )
     print(completed.stdout.decode('utf8'))
-    assert 0# assert '2 passed' in completed.stdout.decode()
+    assert '2 passed' in completed.stdout.decode()
