@@ -40,6 +40,8 @@ import pandas as pd
 
 def check_format_installed(cli, to_check):
     "Checks a foramt is installed"
+    if to_check == 'postgis' or to_check == 'postgresql':
+        to_check = 'postgresql/postgis'
     subprocess.run([cli, '--format', to_check], check=True)
 
 

@@ -1,6 +1,6 @@
 import pandas as pd
 from lxml import html
-import pickle  # for faster loading
+import pickle  # for faster loading of cli
 
 
 def parse(url):
@@ -24,10 +24,11 @@ def parse(url):
     df = pd.DataFrame(processed_rows)
     df.columns = header
     df.to_csv(cli + '_formats.csv', index=False, header=header)
-    pickle.dump(
-        set(df['Code'].apply(lambda code: code.lower().strip())),
-        open(cli + '_formats_set.pkl', 'wb')
-    )
+    to_pickle = set(df['Code'].apply(lambda code: code.lower().strip()))
+    for split in [item.split('/') for item in to_pickle if '/' in item]:
+        for part in split:
+            to_pickle.add(part)
+    pickle.dump(to_pickle, open(cli + '_formats_set.pkl', 'wb'))
 
 
 if __name__ == '__main__':

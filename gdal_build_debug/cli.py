@@ -6,6 +6,14 @@ import re
 import subprocess
 import click
 import pickle
+import logging
+
+logger = logging.getLogger('gdal_build_debug:cli')
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+logger.addHandler(ch)
+
 
 __location__ = os.path.realpath(
     os.path.join(
@@ -44,6 +52,9 @@ def main(ctx, include, exclude):
     ctx.obj['EXCLUDED_FORMATS_OGR'] = ogr.intersection(exclude)
     ctx.obj['INCLUDED_DEPENDENCIES'] = dependencies.intersection(include)
     ctx.obj['EXCLUDED_DEPENDENCIES'] = dependencies.intersection(exclude)
+    logger.info(include)
+    logger.info(exclude)
+    logger.info(ctx.obj['INCLUDED_FORMATS_OGR'])
 
 
 @main.command()
