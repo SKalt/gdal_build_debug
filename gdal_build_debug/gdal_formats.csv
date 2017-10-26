@@ -17,6 +17,7 @@ CEOS (Spot for instance),CEOS,No,No,No,--,Yes
 DRDC COASP SAR Processor Raster,COASP,No,No,No,--,Yes
 TerraSAR-X Complex SAR Data Product,COSAR,No,No,No,--,Yes
 Convair PolGASP data,CPG,No,No,Yes,--,Yes
+CTable2 Datum Grid Shift,CTable2,Yes,Yes,Yes,--,Yes
 USGS LULC Composite Theme Grid,CTG,No,No,Yes,--,Yes
 DB2,DB2,Yes,Yes,Yes,No limits,"No, needs ODBC (and any or all of PNG, JPEG, WEBP drivers)"
 DirectDraw Surface,DDS,No,Yes,No,,"No, needs Crunch Lib"
@@ -105,7 +106,6 @@ NetCDF,netCDF,Yes,Yes,Yes,2GB,"No, needs libnetcdf"
 NTv2 Datum Grid Shift,NTv2,Yes,Yes,Yes,,Yes
 Northwood/VerticalMapper Classified Grid Format .grc/.tab,NWT_GRC,No,No,Yes,--,Yes
 Northwood/VerticalMapper Numeric Grid Format .grd/.tab,NWT_GRD,No,No,Yes,--,Yes
-OGDI Bridge,OGDI,No,No,Yes,--,"No, needs OGDI library"
 OZI OZF2/OZFX3,OZI,No,No,Yes,--,No
 PCI .aux Labelled,PAux,Yes,Yes,No,No limits,Yes
 PCI Geomatics Database File,PCIDSK,Yes,Yes,Yes,No limits,Yes

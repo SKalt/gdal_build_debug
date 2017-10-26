@@ -5,7 +5,7 @@ import os
 import re
 import subprocess
 import click
-from pandas import read_csv
+import pickle
 
 __location__ = os.path.realpath(
     os.path.join(
@@ -15,14 +15,10 @@ __location__ = os.path.realpath(
 )
 
 
-def _get_csv(cli):
-    return set(
-        read_csv(
-            os.path.join(
-                __location__, cli + '_formats.csv'
-            )
-        )['Code'].apply(lambda code: code.lower().strip())
-    )
+def debrine(cli):
+    "load pickled sets of normalized format codes"
+    with open(cli + '_formats_set.pkl', 'rb') as pkl:
+        return pickle.load(pkl)
 
 
 def sort(fmt):
@@ -115,8 +111,8 @@ def test(ctx, config_log_path, dependencies, formats, version_is, args):
 
 
 if __name__ == "__main__":
-    ogr = _get_csv('ogr')
-    gdal = _get_csv('gdal')
+    ogr = debrine('ogr')
+    gdal = debrine('gdal')
     with open(os.path.join(__location__, 'supported.txt')) as f:
         dependencies = set([i.strip().lower() for i in f.read().split('\n')])
     main(obj={})
