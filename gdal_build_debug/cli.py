@@ -23,24 +23,19 @@ __location__ = os.path.realpath(
 )
 
 
-def debrine(cli):
+def debrine(pkl):
     "load pickled sets of normalized format codes"
-    with open(__location__ + '/' + cli + '_formats_set.pkl', 'rb') as pkl:
-        return pickle.load(pkl)
-
-
-def sort(fmt):
-    "sorts --with and --without by belonging to ogr/gdal / the dependencies"
-    pass
+    with open(__location__ + '/' + pkl, 'rb') as _pkl:
+        return pickle.load(_pkl)
 
 
 @click.group()
 @click.option('--with', 'include', multiple=True, help='A dependancy or ' +
               'format to test is included in the gdal build'
-              )
+)
 @click.option('--without', 'exclude', multiple=True, help='A dependancy or ' +
               'format to test is excluded in the gdal build'
-              )
+)
 @click.pass_context
 def main(ctx, include, exclude):
     """Console script for gdal_build_debug."""
@@ -122,8 +117,7 @@ def test(ctx, config_log_path, dependencies, formats, version_is, args):
 
 
 if __name__ == "__main__":
-    ogr = debrine('ogr')
-    gdal = debrine('gdal')
-    with open(os.path.join(__location__, 'supported.txt')) as f:
-        dependencies = set([i.strip().lower() for i in f.read().split('\n')])
+    ogr = debrine('ogr_formats_set.pkl')
+    gdal = debrine('gdal_formats_set.pkl')
+    dependencies = debrine('dependencies_set.pkl')
     main(obj={})
