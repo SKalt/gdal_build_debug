@@ -18,7 +18,7 @@ gdal_build_debug
      :alt: Updates
 
 
-A pytest suite to test whether gdal built with the dependencies and formats you
+A py.test suite to test whether gdal built with the dependencies and formats you
 want.
 
 https://trac.osgeo.org/gdal/wiki/BuildingOnUnix
@@ -26,7 +26,7 @@ https://trac.osgeo.org/gdal/wiki/BuildingOnUnix
 USAGE
 +++++
 
-This is to be used on the command line::
+`gdal_build_debug` is to be used on the command line::
 gdal_build_debug [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -37,8 +37,8 @@ test
 
 EXAMPLES
 --------
-gdal_build_debug test --formats with:postgis
-gdal_build_debug test --formats without:postgis
+gdal_build_debug --with=postgis test --formats
+gdal_build_debug --without=postgis test --formats
 gdal_build_debug test --formats with:postgis without:spatialite
 
 gdal_build_debug test --dependencies with:spatialite

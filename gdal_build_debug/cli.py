@@ -127,7 +127,8 @@ def test(ctx, config_log_path, dependencies, formats, version_is, args):
     logger.debug('pytest ' + __location__ + ' ' + ' '.join(tests))
     subprocess.run(
         ['pytest', __location__] + [test for test in tests if test]
-    )  # TODO: filter by invocation https://docs.pytest.org/en/latest/usage.html#specifying-tests-selecting-tests
+    )  # TODO: filter by invocation
+    # https://docs.pytest.org/en/latest/usage.html#specifying-tests-selecting-tests
 
 
 if __name__ == "__main__":
