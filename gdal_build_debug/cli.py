@@ -31,11 +31,13 @@ def debrine(pkl):
 
 
 @click.group()
-@click.option('--with', 'include', multiple=True, help='A dependancy or ' +
-              'format to test is included in the gdal build'
+@click.option(
+    '--with', 'include', multiple=True, envvar='WITH',
+    help='A dependancy or format to test is included in the gdal build'
 )
-@click.option('--without', 'exclude', multiple=True, help='A dependancy or ' +
-              'format to test is excluded in the gdal build'
+@click.option(
+    '--without', 'exclude', envvar='WITHOUT', multiple=True,
+    help='A dependancy or format to test is excluded in the gdal build'
 )
 @click.pass_context
 def main(ctx, include, exclude):
@@ -67,7 +69,7 @@ def main(ctx, include, exclude):
 @main.command()
 @click.option(
     '--path-to-config-log', 'config_log_path', default='./configure.log',
-    type=click.Path(),
+    envvar='PATH_TO_GDAL_CONFIG_LOG', type=click.Path(),
     help='a relative or absolute path to the logged output of gdal/configure'
 )
 @click.option(
