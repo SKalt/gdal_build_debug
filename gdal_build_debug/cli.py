@@ -2,15 +2,16 @@
 """Console script for gdal_build_debug."""
 
 import os
-import re
 import subprocess
 import click
 import pickle
 import logging
 
-logger = logging.getLogger('gdal_build_debug:cli')
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 ch = logging.StreamHandler()
+ch.setFormatter(formatter)
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
@@ -47,9 +48,20 @@ def main(ctx, include, exclude):
     ctx.obj['EXCLUDED_FORMATS_OGR'] = ogr.intersection(exclude)
     ctx.obj['INCLUDED_DEPENDENCIES'] = dependencies.intersection(include)
     ctx.obj['EXCLUDED_DEPENDENCIES'] = dependencies.intersection(exclude)
-    logger.info(include)
-    logger.info(exclude)
-    logger.info(ctx.obj['INCLUDED_FORMATS_OGR'])
+    logger.debug('included: {}'.format(include))
+    logger.debug('excluded: {}'.format(exclude))
+    logger.debug(
+        'included ogr formats: {}'.format(ctx.obj['INCLUDED_FORMATS_OGR'])
+    )
+    logger.debug(
+        'excluded ogr formats: {}'.format(ctx.obj['EXCLUDED_FORMATS_OGR'])
+    )
+    logger.debug(
+        'included gdal formats {}'.format(ctx.obj['INCLUDED_FORMATS_GDAL'])
+    )
+    logger.debug(
+        'excluded gdal formats {}'.format(ctx.obj['EXCLUDED_FORMATS_GDAL'])
+    )
 
 
 @main.command()
@@ -110,10 +122,10 @@ def test(ctx, config_log_path, dependencies, formats, version_is, args):
             '--without-dependency',
             'EXCLUDED_DEPENDENCIES'
         )
-    print(tests, '************')
+    logger.debug('pytest ' + __location__ + ' ' + ' '.join(tests))
     subprocess.run(
-        ['pytest', __location__, *[test for test in tests if test]]
-    )
+        ['pytest', __location__] + [test for test in tests if test]
+    )  # TODO: filter by invocation https://docs.pytest.org/en/latest/usage.html#specifying-tests-selecting-tests
 
 
 if __name__ == "__main__":
