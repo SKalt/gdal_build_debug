@@ -33,15 +33,23 @@ def debrine(pkl):
 @click.group()
 @click.option(
     '--with', 'include', multiple=True, envvar='WITH',
-    help='A dependancy or format to test is included in the gdal build'
+    help='Dependancies or formats to include in the GDAL build ' +
+    'added to the whitespace-separated list in the environment variable' +
+    ' WITH',
+    # short_help='dependencies/formats to include in build (added to $WITH)',
+    metavar='<included_lib...>'
 )
 @click.option(
     '--without', 'exclude', envvar='WITHOUT', multiple=True,
-    help='A dependancy or format to test is excluded in the gdal build'
+    help='Dependancies or formats to exclude from the GDAL build ' +
+    'added to the whitespace-separated list in the environment variable' +
+    ' WITHOUT',
+    # short_help='dependencies/formats to exclude (added to $WITH)',
+    metavar='<excluded_lib...>'
 )
 @click.pass_context
 def main(ctx, include, exclude):
-    """Console script for gdal_build_debug."""
+    """An assistant for common operations while building GDAL from source"""
     include = [i.lower() for i in include]
     exclude = [i.lower() for i in exclude]
     ctx.obj['INCLUDED_FORMATS_GDAL'] = gdal.intersection(include)
@@ -66,7 +74,7 @@ def main(ctx, include, exclude):
     )
 
 
-@main.command()
+@main.command(short_help='test dependencies/format support/gdal version')
 @click.option(
     '--path-to-config-log', 'config_log_path', default='./configure.log',
     envvar='PATH_TO_GDAL_CONFIG_LOG', type=click.Path(),
