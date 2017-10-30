@@ -31,8 +31,17 @@ def parse(url):
     pickle.dump(to_pickle, open(cli + '_formats_set.pkl', 'wb'))
 
 
+def update_supported():
+    'update the pickled set of gdal dependencies'
+    with open('supported.txt') as dependencies:
+        with open('dependencies_set.pkl', 'wb') as target:
+            to_pickle = set([i.lower() for i in dependencies.split('\n')])
+            pickle.dump(to_pickle, target)
+
+
 if __name__ == '__main__':
     ogr_url = 'http://www.gdal.org/ogr_formats.html'
     gdal_url = 'http://www.gdal.org/formats_list.html'
     parse(ogr_url)
     parse(gdal_url)
+    update_supported()
