@@ -109,7 +109,7 @@ def get_group(match, *names):
     """
     for name in names:
         try:
-            return match.start(name), match.end(name)
+            return match.group(name) and (match.start(name), match.end(name))
         except IndexError:
             continue  # try the next name
     else:
