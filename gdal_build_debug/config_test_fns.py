@@ -93,7 +93,8 @@ def style_results(results):
                     click.style('×', fg='red')
                 )
             )
-            style_result(data)
+            for line in data:
+                style_result(line)
         return all_clear
 
 
