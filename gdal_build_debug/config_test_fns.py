@@ -7,7 +7,7 @@ import re
 import click
 
 
-def test_result(data):
+def check_result(data):
     """
     Returns a boolean whether the test passed or encountered fatal failures.
     Args:
@@ -78,7 +78,7 @@ def style_results(results):
     all_clear = True
     for result in sorted(results.items(), key=lambda item: item[0].lower()):
         key, data = result
-        if test_result(data) and len(data) > 0:
+        if check_result(data) and len(data) > 0:
             click.echo(
                 '{}:\t\t{}'.format(
                     key,
@@ -226,7 +226,7 @@ def make_search(query):
     return search
 
 
-def test_lines(filter_fn, test_fn, config_log_lines, essential=False):
+def check_lines(filter_fn, test_fn, config_log_lines, essential=False):
     """"
     Pipes all lines through the filter_ and test_fns, returns the resulting
     list of tuples
@@ -262,6 +262,6 @@ def main(config_log, queries, accept_internal=True):
     results = {}
     for query in queries:
         search_fn, test_fn = make_search(query), make_test(query)
-        results[query] = test_lines(search_fn, test_fn, support_lines, True)
-        results[query] = test_lines(search_fn, test_fn, checks_lines, False)
+        results[query] = check_lines(search_fn, test_fn, support_lines, True)
+        results[query] = check_lines(search_fn, test_fn, checks_lines, False)
     return style_results(results)
