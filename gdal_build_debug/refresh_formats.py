@@ -33,9 +33,9 @@ def parse(url):
 
 def update_supported():
     'update the pickled set of gdal dependencies'
-    with open('supported.txt') as dependencies:
+    with open('supported.txt') as libs:
+        to_pickle = {i.lower().strip() for i in libs.read().split('\n')}
         with open('dependencies_set.pkl', 'wb') as target:
-            to_pickle = set([i.lower() for i in dependencies.split('\n')])
             pickle.dump(to_pickle, target)
 
 

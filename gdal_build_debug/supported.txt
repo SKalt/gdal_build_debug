@@ -74,3 +74,4 @@ Armadillo
 FreeXL
 SOSI
 MongoDB
+SWIG
