@@ -121,13 +121,17 @@ def get_group(match, *names):
     Returns:
         a tuple of the start and end indexes of the match group
     """
-    for name in names:
-        try:
-            return match.group(name) and (match.start(name), match.end(name))
-        except IndexError:
-            continue  # try the next name
-    else:
-        return  # return None if no recognized name present
+    logger.debug(match)
+    if match:
+        for name in names:
+            try:
+                return match.group(name) and (
+                    match.start(name), match.end(name)
+                )
+            except IndexError:
+                continue  # try the next name
+        else:
+            return  # return None if no recognized name present
 
 
 # unit testing material
@@ -159,23 +163,30 @@ def get_failure(match):
 def default_filter(query, line):
     """Returns a string to test iff the query matches the line"""
     if query in line.lower():
-        split = re.split(':(\.\.\.)')
+        split = re.split(':|(\.\.\.)', line)
         return split[-1]
 
 
-def default_test(response, accept_internal=True):
+def default_test(response, present=True, accept_internal=True):
     "Returns a test response tuple based on a given response string"
-    def answer(satisfies_test):
-        return (satisfies_test, (response, 0, len(response)))
-    if 'no' not in response:
-        if any([a in response for a in ['yes', 'enabled']]):
-            return answer('success')
-        elif accept_internal:
-            return answer('success')
+    def resolve(result):
+        expected = 'present' if present else 'absent'
+        passes_test = result == expected
+        logger.debug('{}, expected {}'.format(result, expected))
+        return 'success' if passes_test else 'failure'
+
+    def make_answer(answer):
+        return (resolve(answer), (0, len(response)))
+    failing_answers = ['no', 'disabled', 'not found']
+    if any([a in response for a in ['yes', 'enabled', 'none needed']]):
+        return make_answer('present')
+    elif not any([a in response for a in failing_answers]):
+        if accept_internal:
+            return make_answer('present')
         else:
-            return answer('failure')
+            return make_answer('present')
     else:
-        return ('failure', (response, 0, len(response)))
+        return make_answer('absent')
 
 
 def regex_filter(query, line):
@@ -187,7 +198,7 @@ def regex_test(query, to_test):
     match = query.search(to_test) if type(to_test) is str else to_test
     # logger.debug('success: {}'.format(get_success(match)))
     # logger.debug('failure: {}'.format(get_failure(match)))
-    return get_success(match) or get_failure(match) or get_pass(match)
+    return  get_success(match) or get_failure(match) or get_pass(match)
 
 # unit testing material:
 # def check_response(resp_obj):
@@ -208,7 +219,7 @@ def is_regex_str(query):
     return any([i in query for i in '[()]\\'])
 
 
-def make_test(query, accept_internal=True):
+def make_test(query, present=True, accept_internal=True):
     """
     Returns a test function of whether a passed line succeeded or not
     """
@@ -221,7 +232,7 @@ def make_test(query, accept_internal=True):
             return regex_test(regex, line)
     else:
         def test(line):
-            return default_test(re.compile(query), line, accept_internal)
+            return default_test(line, present, accept_internal)
     return test
 
 
@@ -251,24 +262,24 @@ def check_lines(filter_fn, test_fn, config_log_lines, essential=False):
     for index, line in enumerate(config_log_lines):
         match = filter_fn(line)
         if match:
+            logger.debug('{} -> {}'.format(line, match))
             results.append(
                 (index + 1, test_fn(match), line, essential)
             )
     return results
 
 
-# def test_config_support(lib, config_results, pass_internal=True):
-#    "Returns True iff the final configuration results all pass the input test"
-#     search = re.compile(r'(?ims){}[^:]*:\W*(?P<response>\w+)'.format(lib))
-#     matches = re.findall(search, config_results)
-#     if pass_internal:
-#         def test(r): 'no' not in r
-#     else:
-#         def test(r): r == 'yes'
-#     return all(map(test, matches))
+def parse_query(query, query_type):
+    search_fn = make_search(query)
+    if query_type == 'regex':
+        return (query, search_fn, make_test(query))
+    else:
+        formatted_query = '{} {}'.format(query, query_type)
+        is_present = query_type == 'present'
+        return formatted_query, search_fn, make_test(query, present=is_present)
 
 
-def main(config_log, queries, accept_internal=True):
+def main(config_log, lib_present, lib_absent, searches, accept_internal=True):
     """
     Given a string config_log, and an iterable of queries (either supported
     libraries or custom searches), runs the full 'test suite'
@@ -276,8 +287,10 @@ def main(config_log, queries, accept_internal=True):
     checks, _, support = config_log.partition('GDAL is now configured')
     checks_lines, support_lines = checks.split('\n'), support.split('\n')
     results = {}
-    for query in queries:
-        search_fn, test_fn = make_search(query), make_test(query)
-        results[query] = check_lines(search_fn, test_fn, support_lines, True)
-        results[query] = check_lines(search_fn, test_fn, checks_lines, False)
+    queries = [parse_query(query.lower(), 'present') for query in lib_present]
+    queries += [parse_query(query, 'regex') for query in searches]
+    queries += [parse_query(query.lower(), 'absent') for query in lib_absent]
+    for _query, search_fn, test_fn in queries:
+        results[_query] = check_lines(search_fn, test_fn, support_lines, True)
+        results[_query] += check_lines(search_fn, test_fn, checks_lines, False)
     return style_results(results)
