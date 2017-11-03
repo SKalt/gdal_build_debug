@@ -7,6 +7,7 @@ import click
 import pickle
 import logging
 from config_test_fns import main as test_config_log
+from format_test_fns import main as test_formats, test_version_is
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -103,43 +104,27 @@ def main(ctx, include, exclude):
 )
 @click.pass_context
 def test(ctx, config_log_path, dependencies, formats, version_is, searches):
-    def map_to_options(arg_name, ctx_name):
-        print(arg_name, ctx.obj[ctx_name], '\n\n')
-        return [arg_name + '=' + arg for arg in ctx.obj[ctx_name]]
+    it_works = True
 
-    tests = ['--version-is=' + str(version_is) if version_is else '']
-    if formats:
-        tests += ['--test-formats']
-        tests += map_to_options(
-            '--with-ogr-format',
-            'INCLUDED_FORMATS_OGR'
-        )
-        tests += map_to_options(
-            '--without-ogr-format',
-            'EXCLUDED_FORMATS_OGR'
-        )
-        tests += map_to_options(
-            '--with-gdal-format',
-            'INCLUDED_FORMATS_GDAL'
-        )
-        tests += map_to_options(
-            '--without-gdal-format',
-            'EXCLUDED_FORMATS_GDAL'
-        )
-        subprocess.run(
-            ['pytest', __location__] + [test for test in tests if test]
-        )
     if dependencies:
         with open(config_log_path) as config_log_file:
             config_log = config_log_file.read()
-            test_config_log(
+            it_works &= test_config_log(
                 config_log,
                 ctx.obj['INCLUDED_DEPENDENCIES'],
                 ctx.obj['EXCLUDED_DEPENDENCIES'],
                 searches
             )
-    logger.debug('pytest ' + __location__ + ' ' + ' '.join(tests))
+    if formats:
+        it_works &= test_formats(
+            ctx.obj['INCLUDED_FORMATS_GDAL'],
+            ctx.obj['INCLUDED_FORMATS_OGR'],
+            ctx.obj['EXCLUDED_FORMATS_GDAL'],
+            ctx.obj['EXCLUDED_FORMATS_OGR']
+        )
 
+    if version_is:
+        it_works &= test_version_is(version_is)
 
 if __name__ == "__main__":
     ogr = debrine('ogr_formats_set.pkl')
