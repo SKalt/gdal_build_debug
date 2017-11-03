@@ -1,5 +1,21 @@
-from gdal_build_debug.config_test_fns import *
-# ^ fix
+from gdal_build_debug.config_test_fns import \
+    style_results, get_pass, get_success, get_failure, \
+    regex_test, default_test, default_filter, check_result, \
+    main, make_test
+from .fixtures.line_endings_that_should_fail import \
+    line_endings_that_should_fail
+from .fixtures.line_endings_that_should_pass import \
+    line_endings_that_should_pass
+import pytest
+import re
+import os
+
+__location__ = os.path.realpath(
+    os.path.join(
+        os.getcwd(),
+        os.path.dirname(__file__)
+    )
+)
 
 
 def test_style_results():
