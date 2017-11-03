@@ -5,6 +5,15 @@ Functions supporting testing of the config log
 
 import re
 import click
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+ch = logging.StreamHandler()
+ch.setFormatter(formatter)
+# ch.setLevel(logging.DEBUG)
+logger.addHandler(ch)
 
 
 def check_result(data):
