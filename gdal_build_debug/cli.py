@@ -6,6 +6,7 @@ import subprocess
 import click
 import pickle
 import logging
+from config_test_fns import main as test_config_log
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -94,16 +95,19 @@ def main(ctx, include, exclude):
     '--version-is', 'version_is', type=str,
     help="Tests whether the cli version is correct via regex"
 )
-@click.argument('args', nargs=-1)
+@click.option(
+    '--search', 'searches', type=str, envvar='CONFIG_LOG_SEARCHES',
+    multiple=True,
+    help='custom searches using regular expressions from python\'s `re` \
+     module.  To use the default f'
+)
 @click.pass_context
-def test(ctx, config_log_path, dependencies, formats, version_is, args):
-
+def test(ctx, config_log_path, dependencies, formats, version_is, searches):
     def map_to_options(arg_name, ctx_name):
         print(arg_name, ctx.obj[ctx_name], '\n\n')
         return [arg_name + '=' + arg for arg in ctx.obj[ctx_name]]
 
-    tests = ['--path-to-config-log=' + i for i in [config_log_path] if i]
-    tests += ['--version-is=' + str(version_is) if version_is else '']
+    tests = ['--version-is=' + str(version_is) if version_is else '']
     if formats:
         tests += ['--test-formats']
         tests += map_to_options(
@@ -122,21 +126,19 @@ def test(ctx, config_log_path, dependencies, formats, version_is, args):
             '--without-gdal-format',
             'EXCLUDED_FORMATS_GDAL'
         )
+        subprocess.run(
+            ['pytest', __location__] + [test for test in tests if test]
+        )
     if dependencies:
-        tests += ['--test-dependencies']
-        tests += map_to_options(
-            '--with-dependency',
-            'INCLUDED_DEPENDENCIES'
-        )
-        tests += map_to_options(
-            '--without-dependency',
-            'EXCLUDED_DEPENDENCIES'
-        )
+        with open(config_log_path) as config_log_file:
+            config_log = config_log_file.read()
+            test_config_log(
+                config_log,
+                ctx.obj['INCLUDED_DEPENDENCIES'],
+                ctx.obj['EXCLUDED_DEPENDENCIES'],
+                searches
+            )
     logger.debug('pytest ' + __location__ + ' ' + ' '.join(tests))
-    subprocess.run(
-        ['pytest', __location__] + [test for test in tests if test]
-    )  # TODO: filter by invocation
-    # https://docs.pytest.org/en/latest/usage.html#specifying-tests-selecting-tests
 
 
 if __name__ == "__main__":
