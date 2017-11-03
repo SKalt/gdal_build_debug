@@ -23,16 +23,16 @@ def test_style_results():
     assert style_results(results)
     results = {'foo': [(1, ('failure', (0, 1)), 'bar', True)]}
     assert not style_results(results)
-    # results = {'foo': [(1, ('failure', (0, 1)), 'bar', False)]}
-    # assert not style_results(results)
-    # results = {'foo': [(1, ('success', (0, 1)), 'bar', False)]}
-    # assert style_results(results)
-    # results = {'foo': [(1, ('pass', (0, 1)), 'bar', False)]}
-    # assert style_results(results)
-    # results = {'foo': [(1, (None, None), 'bar', False)]}
-    # assert style_results(results)
-    # results = {'foo': [(1, (None, None), 'bar', True)]}
-    # assert style_results(results)
+    results = {'foo': [(1, ('failure', (0, 1)), 'bar', False)]}
+    assert not style_results(results)
+    results = {'foo': [(1, ('success', (0, 1)), 'bar', False)]}
+    assert style_results(results)
+    results = {'foo': [(1, ('pass', (0, 1)), 'bar', False)]}
+    assert style_results(results)
+    results = {'foo': [(1, (None, None), 'bar', False)]}
+    assert style_results(results)
+    results = {'foo': [(1, (None, None), 'bar', True)]}
+    assert style_results(results)
 
 
 def test_get_group():
@@ -76,16 +76,63 @@ def test_check_results():
     ]
     assert check_result(data)
     assert check_result(data[::-1])
-    
-# def test_response():
-#     resp_obj = # the output of a test fn
-#     assert type(resp_obj) is tuple
-#     assert len(resp_obj) == 4
-#     line_num, test_resp, line, is_essential = resp_obj
-#     assert type(line_num) is int
-#     assert type(check_success) is str or check_success is None
-#     check_success, (start, end) = test_resp
-#     assert start is None or type(start) is int
-#     assert end is None or type(end) is int
-#     assert type(line) is str
-#     assert type(is_essential) is bool
+
+
+def response_obj_assertions(resp_obj):
+    print(resp_obj  )
+    assert type(resp_obj) is tuple
+    assert len(resp_obj) == 2
+    #success, indexes = resp_obj
+    #assert type(line_num) is int
+    check_success, indexes = resp_obj
+    assert type(check_success) is str or check_success is None
+    assert indexes is None or \
+        type(indexes[0]) is int and type(indexes[1]) is int
+
+
+@pytest.mark.parametrize('data', line_endings_that_should_pass)
+def test_default_test_fn_returns_true(data):
+    resp_obj = default_test(data)
+    response_obj_assertions(resp_obj)
+    assert resp_obj[0] == 'success'
+
+
+@pytest.mark.parametrize('data', line_endings_that_should_fail)
+def test_default_test_fn_returns_false(data):
+    resp_obj = default_test(data)
+    response_obj_assertions(resp_obj)
+    assert resp_obj[0] == 'failure'
+
+
+@pytest.mark.parametrize('present', (True, False))
+def test_make_test(present):
+    _test = make_test('foo', present)
+    expected = 'success' if present else 'failure'
+    assert _test('yes ok enabled')[0] == expected
+    expected = 'failure' if present else 'success'
+    assert _test('no nope not this one disabled')[0] == expected
+
+@pytest.mark.parametrize('params', (
+    (['json'], [], []),
+    ([], ['pdf'], []),
+    ([], ['mongodb'], []),
+    ([], [], ['postgresql:::(no)']),
+    (['json', 'MRF'], [], [])
+    )
+)
+def test_main_passes(params):
+    with open(__location__ + '/fixtures/configure.log') as log_file:
+        log = log_file.read()
+    assert main(log, *params)
+
+
+@pytest.mark.parametrize('params', (
+    (['pdf'], [], []),
+    (['postgresql'], [], []),
+    ([], [], ['postgresql:::(yes)|(no)'])
+    )
+)
+def test_main_fails(params):
+    with open(__location__ + '/fixtures/configure.log') as log_file:
+        log = log_file.read()
+    assert not main(log, *params)
