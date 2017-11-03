@@ -56,9 +56,10 @@ def style_result(data):
     """
     line_num, (test_result, indexes), line, essential = data
     final = ''
-    color = 'light grey'
+    color = 'white'
     start = 0
     end = len(line)
+    logger.debug('style_result input data ' + str(data))
     if test_result[0] == 'passes':
         start, end = indexes
         color = 'green'
@@ -89,6 +90,7 @@ def style_results(results):
     all_clear = True
     for result in sorted(results.items(), key=lambda item: item[0].lower()):
         key, data = result
+        logger.debug(result)
         if check_result(data) and len(data) > 0:
             click.echo(
                 '{}:\t\t{}'.format(
@@ -183,6 +185,8 @@ def regex_filter(query, line):
 
 def regex_test(query, to_test):
     match = query.search(to_test) if type(to_test) is str else to_test
+    # logger.debug('success: {}'.format(get_success(match)))
+    # logger.debug('failure: {}'.format(get_failure(match)))
     return get_success(match) or get_failure(match) or get_pass(match)
 
 # unit testing material:
