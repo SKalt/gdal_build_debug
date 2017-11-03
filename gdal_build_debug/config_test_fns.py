@@ -32,9 +32,11 @@ def check_result(data):
     essential_lines_present = False
     for _, (result, _), _, essential in data:
         if essential:
-            essential_success = essential_success and result != 'failure'
+            essential_success &= result != 'failure'
             if not essential_lines_present:
                 essential_lines_present = True
+        elif not essential_lines_present:
+            non_essential_success |= result != 'failure'
     if essential_lines_present:
         return essential_success
     else:
