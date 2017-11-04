@@ -1,7 +1,7 @@
 from gdal_build_debug.config_test_fns import \
     style_results, get_pass, get_success, get_failure, \
-    regex_test, default_test, default_filter, check_result, \
-    main, make_test
+    regex_test, default_test, check_result, \
+    main, make_test  # ,default_filter,
 from .fixtures.line_endings_that_should_fail import \
     line_endings_that_should_fail
 from .fixtures.line_endings_that_should_pass import \
@@ -43,7 +43,7 @@ def test_get_group():
     match = re.match('abc: (foo)?(?P<success>1)', 'abc: 1')
     assert get_pass(match) == (None, None)
     assert get_success(match)
-    assert get_failure(match) # faiure looks at group 2
+    assert get_failure(match)  # faiure looks at group 2
     assert regex_test('pass', match)
     assert regex_test('pass', match)[0] == 'success'
     match = re.match('abc: (foo)?(?P<failure>1)', 'abc: 1')
@@ -79,11 +79,11 @@ def test_check_results():
 
 
 def response_obj_assertions(resp_obj):
-    print(resp_obj  )
+    print(resp_obj)
     assert type(resp_obj) is tuple
     assert len(resp_obj) == 2
-    #success, indexes = resp_obj
-    #assert type(line_num) is int
+    # success, indexes = resp_obj
+    # assert type(line_num) is int
     check_success, indexes = resp_obj
     assert type(check_success) is str or check_success is None
     assert indexes is None or \
@@ -111,6 +111,7 @@ def test_make_test(present):
     assert _test('yes ok enabled')[0] == expected
     expected = 'failure' if present else 'success'
     assert _test('no nope not this one disabled')[0] == expected
+
 
 @pytest.mark.parametrize('params', (
     (['json'], [], []),

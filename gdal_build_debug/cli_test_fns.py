@@ -11,6 +11,7 @@ ch.setFormatter(formatter)
 # ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
+
 def check_format_installed(cli, to_check, is_present=True):
     "Checks a foramt is installed"
     if to_check == 'postgis' or to_check == 'postgresql':
@@ -22,7 +23,7 @@ def check_format_installed(cli, to_check, is_present=True):
         )
         if not is_present:
             raise AssertionError(to_check + ' is unexpectedly present')
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError:  # as err
         # logger.debug(err.args)
         if is_present:
             raise AssertionError(to_check + ' is unexpectedly absent')
@@ -50,6 +51,7 @@ def style_check(cli, to_check, is_present=True):
             )
         )
         return False
+
 
 def main(ogr_include, ogr_exclude, gdal_include, gdal_exclude):
     result = True

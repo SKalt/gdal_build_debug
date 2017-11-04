@@ -3,7 +3,7 @@ checking host system type... x86_64-pc-linux-gnu
 checking for gcc... gcc
 checking whether the C compiler works... yes
 checking for C compiler default output file name... a.out
-checking for suffix of executables... 
+checking for suffix of executables...
 checking whether we are cross compiling... no
 checking for suffix of object files... o
 checking whether we are using the GNU C compiler... yes
@@ -444,11 +444,10 @@ GDAL is now configured for x86_64-pc-linux-gnu
   MongoDB support:           no
 
 
-  SWIG Bindings:             python 
+  SWIG Bindings:             python
 
   Statically link PROJ.4:    no
   enable GNM building:       yes
   enable pthread support:    yes
   enable POSIX iconv support:yes
   hide internal symbols:     no
-
