@@ -2,12 +2,12 @@
 """Console script for gdal_build_debug."""
 
 import os
-import subprocess
+# import subprocess
 import click
 import pickle
 import logging
 from config_test_fns import main as test_config_log
-from format_test_fns import main as test_formats, test_version_is
+from cli_test_fns import main as test_formats, test_version_is
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
