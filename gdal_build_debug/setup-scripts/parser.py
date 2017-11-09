@@ -1,6 +1,14 @@
 import re
 # import logging
 import pickle
+import os
+
+__location__ = os.path.realpath(
+    os.path.join(
+        os.getcwd(),
+        os.path.dirname(__file__)
+    )
+)
 
 # logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
@@ -73,17 +81,19 @@ def extract_flags(usage):
     return included, excluded, flags, optionals, required
 
 
+def preserve(obj, name):
+    loc = os.path.join(__location__, '..', 'pickles', name + '.pkl')
+    with open(loc, 'wb') as target:
+        pickle.dump(obj, target)
+
+
 if __name__ == '__main__':
-    with open('./gdal-2.2.1.txt') as helpfile:
+    loc = os.path.join(__location__, 'reference-documents', 'helpfile.txt')
+    with open(loc) as helpfile:
         usage = helpfile.read()
     included, excluded, flags, optionals, required = extract_flags(usage)
-    with open('../included_flags.pkl', 'wb') as target:
-        pickle.dump(included, target)
-    with open('../excluded_flags.pkl', 'wb') as target:
-        pickle.dump(excluded, target)
-    with open('../flags.pkl', 'wb') as target:
-        pickle.dump(flags, target)
-    with open('../options_with_default.pkl', 'wb') as target:
-        pickle.dump(optionals, target)
-    with open('../options_requiring_argument.pkl', 'wb') as target:
-        pickle.dump(required, target)
+    preserve(included, 'included_flags')
+    preserve(excluded, 'excluded_flags')
+    preserve(flags, 'flags')
+    preserve(optionals, 'options_with_default')
+    preserve(required, 'options_requiring_argument')

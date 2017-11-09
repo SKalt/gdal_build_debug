@@ -1,6 +1,14 @@
 import pandas as pd
 from lxml import html
 import pickle  # for faster loading of cli
+import os
+
+__location__ = os.path.realpath(
+    os.path.join(
+        os.getcwd(),
+        os.path.dirname(__file__)
+    )
+)
 
 
 def parse(url):
@@ -33,7 +41,12 @@ def parse(url):
 
 def update_supported():
     'update the pickled set of gdal dependencies'
-    with open('supported.txt') as libs:
+    with open(
+        os.path.join(
+            __location__, '..', 'reference-documents', 'supported.txt')
+    ) as libs:
+        # supported.txt is from concatenating ogr and gdal formats, with some
+        # judicious word-splitting
         to_pickle = {i.lower().strip() for i in libs.read().split('\n')}
         with open('dependencies_set.pkl', 'wb') as target:
             pickle.dump(to_pickle, target)
