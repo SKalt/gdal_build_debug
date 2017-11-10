@@ -31,21 +31,24 @@ def check_format_installed(cli, to_check, is_present=True):
 
 def style_check(cli, to_check, is_present=True):
     _cli = cli.replace('info', '')
+    _present = 'present in' if is_present else 'absent from'
     if cli not in ['gdalinfo', 'ogrinfo']:
         cli = 'gdalinfo' if 'gdal' in cli else 'ogrinfo'
     try:
         check_format_installed(cli, to_check, is_present)
-        click.echo('{}:{}\t{}'.format(
-            _cli,
+        click.echo('{:14} {:11} {:4}:  {}'.format(
             to_check,
+            _present,
+            _cli,
             click.style('✓', fg='green')
             )
         )
         return True
     except AssertionError as err:
-        click.echo('{}:{}\t{}\t{}'.format(
-            _cli,
+        click.echo('{:14} {:11} {:4}:  {}\n\t{}'.format(
             to_check,
+            _present,
+            _cli,
             click.style('×', fg='red'),
             click.style(err.args[0], fg='red')
             )
@@ -70,12 +73,12 @@ def test_version_is(expected):
     called = subprocess.run(
         ['gdalinfo', '--version'], check=True, stdout=subprocess.PIPE
     )
-    actual = called.stdout.decode()
-    if expected == re.search('\d+\.\d+\.\d+', actual).group(0):
+    actual = re.search('\d+\.\d+\.\d+', called.stdout.decode()).group(0)
+    if expected == actual:
         click.echo(click.style(expected, fg='green'))
         return True
     else:
-        click.echo('expected:{}\tactual:{}'.format(
+        click.echo('expected version:  {}\nactual version  :  {}'.format(
             click.style(expected, fg='green'),
             click.style(actual, fg='red')
             )
