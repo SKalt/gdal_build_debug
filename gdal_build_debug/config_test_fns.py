@@ -77,7 +77,7 @@ def style_result(data):
     click.echo(final)
 
 
-def style_results(results):
+def style_results(results, quiet=False):
     """
     Echoes styled results to the command line and returns a boolean, whether
     all tests passed.
@@ -88,26 +88,30 @@ def style_results(results):
         a boolean, whether all tests passed
     """
     all_clear = True
+    if not quiet:
+        click.echo('{:-^80}'.format('configuration tests'))
     for result in sorted(results.items(), key=lambda item: item[0].lower()):
         key, data = result
         logger.debug(result)
-        if check_result(data) and len(data) > 0:
-            click.echo(
-                '{}:\t\t{}'.format(
-                    key,
-                    click.style('✓', fg='green')
+        if not quiet and check_result(data):
+            if len(data) > 0:
+                click.echo(
+                    '{:31}:  {}'.format(
+                        key,
+                        click.style('✓', fg='green')
+                    )
                 )
-            )
         else:
             all_clear = False
-            click.echo(
-                '{}:\t\t{}'.format(
-                    key,
-                    click.style('×', fg='red')
+            if not quiet:
+                click.echo(
+                    '{:31}:  {}'.format(
+                        key,
+                        click.style('×', fg='red')
+                    )
                 )
-            )
-            for line in data:
-                style_result(line)
+                for line in data:
+                    style_result(line)
         return all_clear
 
 
@@ -198,7 +202,7 @@ def regex_test(query, to_test):
     match = query.search(to_test) if type(to_test) is str else to_test
     # logger.debug('success: {}'.format(get_success(match)))
     # logger.debug('failure: {}'.format(get_failure(match)))
-    return  get_success(match) or get_failure(match) or get_pass(match)
+    return get_success(match) or get_failure(match) or get_pass(match)
 
 # unit testing material:
 # def check_response(resp_obj):
@@ -279,11 +283,15 @@ def parse_query(query, query_type):
         return formatted_query, search_fn, make_test(query, present=is_present)
 
 
-def main(config_log, lib_present, lib_absent, searches, accept_internal=True):
+def main(
+    config_log, lib_present, lib_absent, searches, accept_internal=True,
+    level=logging.INFO
+):
     """
     Given a string config_log, and an iterable of queries (either supported
     libraries or custom searches), runs the full 'test suite'
     """
+    ch.setLevel(level)
     checks, _, support = config_log.partition('GDAL is now configured')
     checks_lines, support_lines = checks.split('\n'), support.split('\n')
     results = {}

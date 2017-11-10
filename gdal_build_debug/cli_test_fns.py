@@ -56,7 +56,13 @@ def style_check(cli, to_check, is_present=True):
         return False
 
 
-def main(ogr_include, ogr_exclude, gdal_include, gdal_exclude):
+def main(
+    ogr_include=[], ogr_exclude=[], gdal_include=[], gdal_exclude=[],
+    level=logging.ERROR, quiet=False
+):
+    ch.setLevel(level)
+    if not quiet:
+        click.echo('{:-^80}'.format('command-line formats tests'))
     result = True
     for fmt in sorted(list(gdal_include)):
         result &= style_check('gdalinfo', fmt, is_present=True)
