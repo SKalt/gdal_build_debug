@@ -1,6 +1,6 @@
 import re
 # import logging
-import pickle
+import json
 import os
 
 __location__ = os.path.realpath(
@@ -81,14 +81,16 @@ def extract_flags(usage):
     return included, excluded, flags, optionals, required
 
 
-def preserve(obj, name):
-    loc = os.path.join(__location__, '..', 'pickles', name + '.pkl')
-    with open(loc, 'wb') as target:
-        pickle.dump(obj, target)
+def preserve(set_obj, name):
+    loc = os.path.join(__location__, '..', 'json', name + '.json')
+    with open(loc, 'w') as target:
+        target.write(json.dumps(list(set_obj)))
 
 
 if __name__ == '__main__':
-    loc = os.path.join(__location__, 'reference-documents', 'helpfile.txt')
+    loc = os.path.join(
+        __location__, '..', 'reference-documents', 'helpfile.txt'
+        )
     with open(loc) as helpfile:
         usage = helpfile.read()
     included, excluded, flags, optionals, required = extract_flags(usage)

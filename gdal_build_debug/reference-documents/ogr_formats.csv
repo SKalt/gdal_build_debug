@@ -22,6 +22,7 @@ ElasticSearch,ElasticSearch,Yes,Yes,"No, needs libcurl"
 ESRI FileGDB,FileGDB,Yes,Yes,"No, needs FileGDB API library"
 ESRI Personal GeoDatabase,PGeo,No,Yes,"No, needs ODBC library"
 ESRI ArcSDE,SDE,No,Yes,"No, needs ESRI SDE"
+ESRIJSON,ESRIJSON,No,Yes,Yes
 ESRI Shapefile / DBF,ESRI Shapefile,Yes,Yes,Yes
 FMEObjects Gateway,FMEObjects Gateway,No,Yes,"No, needs FME"
 GeoJSON,GeoJSON,Yes,Yes,Yes
@@ -79,13 +80,14 @@ SQLite/SpatiaLite,SQLite,Yes,Yes,"No, needs libsqlite3 or libspatialite"
 SUA,SUA,No,Yes,Yes
 SVG,SVG,No,Yes,"No, needs libexpat"
 Storage and eXchange Format,SXF,No,Yes,Yes
-UK .NTF,UK. NTF,No,Yes,Yes
 U.S. Census TIGER/Line,TIGER,No,Yes,Yes
+TopoJSON,TopoJSON,No,Yes,Yes
+UK .NTF,UK. NTF,No,Yes,Yes
+VDV-451/VDV-452/IDF,VDV,Yes,Yes,Yes
 VRT - Virtual Datasource,VRT,No,Yes,Yes
+Walk,Walk,No,Yes,"No, needs ODBC library"
+WAsP .map format,WAsP,Yes,Yes,Yes
 OGC WFS (Web Feature Service),WFS,Yes,Yes,"No, needs libcurl"
 MS Excel format,XLS,No,No,"No, needs libfreexl"
 MS Office Open XML spreadsheet,XLSX,Yes,No,"No, needs libexpat"
 X-Plane/Flightgear aeronautical data,XPLANE,No,Yes,Yes
-VDV-451/VDV-452/IDF,VDV,Yes,Yes,Yes
-Walk,Walk,No,Yes,"No, needs ODBC library"
-WAsP .map format,WAsP,Yes,Yes,Yes
