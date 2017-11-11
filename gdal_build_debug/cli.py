@@ -4,7 +4,7 @@
 import os
 # import subprocess
 import click
-import pickle
+import json
 import logging
 from pprint import pprint
 from config_test_fns import main as test_config_log
@@ -31,10 +31,10 @@ __location__ = os.path.realpath(
 )
 
 
-def debrine(pkl):
+def load(json_file):
     "load pickled sets of normalized format codes"
-    with open(os.path.join(__location__, 'pickles', pkl), 'rb') as _pkl:
-        return pickle.load(_pkl)
+    with open(os.path.join(__location__, 'json', json_file), 'r') as _json:
+        return json.load(_json)
 
 
 def lookup(name, obj):
@@ -231,16 +231,16 @@ def command(ctx, path_to_config_command, save_to):
 
 if __name__ == "__main__":
     # TODO: set all this up in setup-scripts and debrine this as a tuple
-    ogr = debrine('ogr_formats_set.pkl')
-    gdal = debrine('gdal_formats_set.pkl')
+    ogr = set(load('ogr_formats_set.json'))
+    gdal = set(load('gdal_formats_set.json'))
     formats = gdal.union(ogr)
-    dependencies = debrine('dependencies_set.pkl')
+    dependencies = set(load('dependencies_set.json'))
     options = {  # setify(json.loads(os.path.join(__location__, '...')))
-        'excludable': debrine('excluded_flags.pkl'),
-        'includable': debrine('included_flags.pkl'),
-        'flags': debrine('flags.pkl'),
-        'require_arguments': debrine('options_requiring_argument.pkl'),
-        'has_default': debrine('options_with_default.pkl')
+        'excludable': set(load(('excluded_flags.json'))),
+        'includable': set(load('included_flags.json')),
+        'flags': set(load('flags.json')),
+        'require_arguments': set(load('options_requiring_argument.json')),
+        'has_default': set(load('options_with_default.json'))
     }
     options['all'] = options['includable']\
         .union(options['excludable'])\
