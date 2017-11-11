@@ -37,8 +37,8 @@ test
 
 EXAMPLES
 --------
-gdal_build_debug --with=postgis test --formats
-gdal_build_debug --without=postgis test --formats
+gdal_build_debug --with postgis test --formats
+gdal_build_debug --without postgis test --formats
 gdal_build_debug test --formats with:postgis without:spatialite
 
 gdal_build_debug test --dependencies with:spatialite

@@ -1,3 +1,7 @@
+"""
+Unit tests for ..gdal_build_debug/config_test_fns.py
+"""
+
 from gdal_build_debug.config_test_fns import \
     style_results, get_pass, get_success, get_failure, \
     regex_test, default_test, check_result, \
