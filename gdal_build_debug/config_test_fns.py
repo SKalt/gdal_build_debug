@@ -12,8 +12,8 @@ logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 ch = logging.StreamHandler()
 ch.setFormatter(formatter)
-# ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
+debug = logger.debug
 
 
 def check_result(data):
@@ -92,15 +92,15 @@ def style_results(results, quiet=False):
         click.echo('{:-^80}'.format('configuration tests'))
     for result in sorted(results.items(), key=lambda item: item[0].lower()):
         key, data = result
-        logger.debug(result)
-        if not quiet and check_result(data):
-            if len(data) > 0:
-                click.echo(
-                    '{:31}:  {}'.format(
-                        key,
-                        click.style('✓', fg='green')
+        if check_result(data):
+            if not quiet:
+                if len(data) > 0:
+                    click.echo(
+                        '{:31}:  {}'.format(
+                            key,
+                            click.style('✓', fg='green')
+                        )
                     )
-                )
         else:
             all_clear = False
             if not quiet:
@@ -112,7 +112,7 @@ def style_results(results, quiet=False):
                 )
                 for line in data:
                     style_result(line)
-        return all_clear
+    return all_clear
 
 
 def get_group(match, *names):
