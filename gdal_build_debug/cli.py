@@ -6,7 +6,6 @@ import os
 import click
 import json
 import logging
-from pprint import pprint
 from config_test_fns import main as test_config_log
 from cli_test_fns import main as test_formats
 from cli_test_fns import test_version_is
