@@ -13,7 +13,15 @@ logger.addHandler(ch)
 
 
 def check_format_installed(cli, to_check, is_present=True):
-    "Checks a foramt is installed"
+    '''
+    Checks a foramt is installed
+    Args:
+        cli: the str 'gdal' or 'ogr': which command-line interface to test.
+        to_check: the str format to check is supported by the gdal cli.
+        is_present: whether or not the format should be present
+    Throws:
+        AssertionError: if the checked format is unexpectedly present / absent.
+    '''
     if to_check == 'postgis' or to_check == 'postgresql':
         to_check = 'postgresql/postgis'
     try:
@@ -30,6 +38,16 @@ def check_format_installed(cli, to_check, is_present=True):
 
 
 def style_check(cli, to_check, is_present=True):
+    '''
+    Prints the styled results of testing whether a format is included.
+    Args:
+        cli: the str 'gdalinfo' or 'ogrinfo': which command-line interface to
+            test.
+        to_check: the str format to check is supported by the gdal cli.
+        is_present: whether or not the format should be present
+    Returns:
+        test_success: the boolean value of whether or not the test succeeded.
+    '''
     _cli = cli.replace('info', '')
     _present = 'present in' if is_present else 'absent from'
     if cli not in ['gdalinfo', 'ogrinfo']:
@@ -45,7 +63,7 @@ def style_check(cli, to_check, is_present=True):
         )
         return True
     except AssertionError as err:
-        click.echo('{:14} {:11} {:4}:  {}\n\t{}'.format(
+        click.echo('{:14} {:11} {:4}:  {}\t{}'.format(
             to_check,
             _present,
             _cli,
@@ -60,6 +78,18 @@ def main(
     ogr_include=[], ogr_exclude=[], gdal_include=[], gdal_exclude=[],
     level=logging.ERROR, quiet=False
 ):
+    '''
+    Runs and styles tests of whether formats are supported by gdal and ogr.
+    Args:
+        ogr_include: an iterable of str format names to check are included in
+            ogr
+        ogr_exclude: an iterable of str format names to check are included in
+            ogr
+        gdal_include: an iterable of str format names to check are included in
+            gdal
+        gdal_exclude: an iterable of str format names to check are included in
+            gdal
+    '''
     ch.setLevel(level)
     if not quiet:
         click.echo('{:-^80}'.format('command-line formats tests'))
@@ -76,6 +106,15 @@ def main(
 
 
 def test_version_is(expected):
+    '''
+    Checks the gdal command-line version is the version you expect.
+    Args:
+        expected: a str version number of the form
+            major_num.minor_num.patch_num
+    Returns:
+        test_success: the boolean value of whether the expected version matched
+            the actual command-line version.
+    '''
     called = subprocess.run(
         ['gdalinfo', '--version'], check=True, stdout=subprocess.PIPE
     )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
+'''
 Functions supporting testing of the config log
-"""
+'''
 
 import re
 import click
@@ -17,7 +17,7 @@ debug = logger.debug
 
 
 def check_result(data):
-    """
+    '''
     Returns a boolean whether the test passed or encountered fatal failures.
     Args:
         data: a list of tuples of the form (
@@ -26,7 +26,10 @@ def check_result(data):
             str full line,
             bool is failing the test on this line fatal
         )
-    """
+    Returns:
+        A boolean value whether all tests of essential lines or all test of
+            non-essential lines succeeded
+    '''
     essential_success = True
     non_essential_success = False
     essential_lines_present = False
@@ -44,7 +47,7 @@ def check_result(data):
 
 
 def style_result(data):
-    """
+    '''
     echoes lines related to a test result with ANSI colors
     Args:
         data: (
@@ -53,7 +56,9 @@ def style_result(data):
             str line,
             bool essential
             )
-    """
+    Returns:
+        None
+    '''
     line_num, (test_result, indexes), line, essential = data
     final = ''
     color = 'white'
@@ -78,7 +83,7 @@ def style_result(data):
 
 
 def style_results(results, quiet=False):
-    """
+    '''
     Echoes styled results to the command line and returns a boolean, whether
     all tests passed.
     Args:
@@ -86,7 +91,7 @@ def style_results(results, quiet=False):
             tested lines
     Returns:
         a boolean, whether all tests passed
-    """
+    '''
     all_clear = True
     if not quiet:
         click.echo('{:-^80}'.format('configuration tests'))
@@ -116,7 +121,7 @@ def style_results(results, quiet=False):
 
 
 def get_group(match, *names):
-    """
+    '''
     Returns the first resolved regex match group from the given identifiers
     Args:
         match: a re.match object
@@ -124,7 +129,7 @@ def get_group(match, *names):
             should be tried
     Returns:
         a tuple of the start and end indexes of the match group
-    """
+    '''
     logger.debug(match)
     if match:
         for name in names:
@@ -146,33 +151,43 @@ def get_group(match, *names):
 
 
 def get_success(match):
+    'Returns a matched success condition or None'
     success = get_group(match, 'success', 1)
     return ('success', success) if success else None
 
 
 def get_pass(match):
-    """
+    '''
+    Returns a matched pass condition or None.
     contains no group index since as an optional value, it must be explicityly
     named
-    """
+    '''
     acceptable = get_group(match, 'pass')
     return ('pass', acceptable) if acceptable else (None, None)
 
 
 def get_failure(match):
+    '''
+    Returns a matched failure condition or None.
+    '''
     failure = get_group(match, 'fail', 'failure', 2)
     return ('failure', failure) if failure else None
 
 
 def default_filter(query, line):
-    """Returns a string to test iff the query matches the line"""
+    '''
+    Returns a string to test iff the query matches the line
+    '''
     if query in line.lower():
         split = re.split(':|(\.\.\.)', line)
+        #                       ^ the default line / result separator
         return split[-1]
 
 
 def default_test(response, present=True, accept_internal=True):
-    "Returns a test response tuple based on a given response string"
+    '''
+    Returns a test response tuple based on a given response string
+    '''
     def resolve(result):
         expected = 'present' if present else 'absent'
         passes_test = result == expected
@@ -194,7 +209,9 @@ def default_test(response, present=True, accept_internal=True):
 
 
 def regex_filter(query, line):
-    "returns a regex match or None"
+    '''
+    Returns a regex match or None
+    '''
     return query.search(line)
 
 
@@ -224,9 +241,9 @@ def is_regex_str(query):
 
 
 def make_test(query, present=True, accept_internal=True):
-    """
+    '''
     Returns a test function of whether a passed line succeeded or not
-    """
+    '''
     query = query.partition(':::')
     query = query[2] or query[0]
     if is_regex_str(query):
@@ -258,10 +275,10 @@ def make_search(query):
 
 
 def check_lines(filter_fn, test_fn, config_log_lines, essential=False):
-    """"
+    '''"
     Pipes all lines through the filter_ and test_fns, returns the resulting
     list of tuples
-    """
+    '''
     results = []
     for index, line in enumerate(config_log_lines):
         match = filter_fn(line)
@@ -287,10 +304,10 @@ def main(
     config_log, lib_present, lib_absent, searches, accept_internal=True,
     level=logging.INFO
 ):
-    """
+    '''
     Given a string config_log, and an iterable of queries (either supported
     libraries or custom searches), runs the full 'test suite'
-    """
+    '''
     ch.setLevel(level)
     checks, _, support = config_log.partition('GDAL is now configured')
     checks_lines, support_lines = checks.split('\n'), support.split('\n')
