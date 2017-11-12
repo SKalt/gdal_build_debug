@@ -37,196 +37,154 @@ def load(json_file):
         return json.load(_json)
 
 
-def lookup(name, obj):
-    'lookup .-separated path from nested dict'
-    for path in name.split('.'):
-        obj = obj[path]
-    return obj
-
-
-def setify(d):
-    '''
-    coerces all lists in nested dict to sets. Note this modifies the nested
-    dict in-place.
-    '''
-    if type(d) is list:
-        return set(d)
-    elif type(d) is dict:
-        for k, v in d.items():
-            d[k] = setify(v)
-        return d
-    else:
-        return d
-
-
-@click.group()
+@click.group('test-gdal-build')
+@click.option('--root', help='root path for relative paths', default='')
 @click.option(
-    '--with', 'include', multiple=True, envvar='WITH',
-    help='Dependancies, formats, or options to include in the GDAL ' +
-    'build added to the whitespace-separated list in the environment ' +
-    'variable WITH',
-    # short_help='dependencies/formats to include in build (added to $WITH)',
-    metavar='<included_lib...>'
-)
-@click.option(
-    '--without', 'exclude', envvar='WITHOUT', multiple=True,
-    help='Dependancies or formats to exclude from the GDAL build ' +
-    'added to the whitespace-separated list in the environment variable' +
-    ' WITHOUT',
-    # short_help='dependencies/formats to exclude (added to $WITH)',
-    metavar='<excluded_lib...>'
-)
-@click.option(
-    '--debug', is_flag=True,
-    help='whether to include debug logging', default=False
-)
-# @click.option(
-#     '--quiet', '-q', is_flag=True, help='whether to silence all stdout'
-# )
+    '--debug', is_flag=True, help='whether to include debug logs in output'
+    )
 @click.pass_context
-def main(ctx, include, exclude, debug):
-    """An assistant for common operations while building GDAL from source"""
-    def get(name): return lookup(name, ctx.obj)
-
-    def add(flag, to=''):
-        get(to).add(flag)
-
-    def check(flag, arg):
-        if flag in options['require_arguments'] and not arg:
-            raise TypeError(flag + ' requires an argument & none given')
-        if flag in options['flags'] and arg:
-            raise TypeError(
-                '{} takes 0 arguments yet {} given'.format(flag, arg)
-            )
-
-    # if verbose:
-    ctx.obj['LEVEL'] = logging.DEBUG if debug else logging.INFO
-    # if quiet:
-    #     pass
-    ch.setLevel(ctx.obj['LEVEL'])
-    include = [i.lower().partition('=') for i in include]
-    exclude = [i.lower() for i in exclude]
-    for flag, _, arg in include:
-        complete_flag = '{}={}'.format(flag, arg)
-        add(flag, to='INCLUDED.DEPENDENCIES')
-        try:
-            check(flag, arg)
-            if flag in options['includable']:
-                if flag in options['package']:
-                    add(complete_flag, to='INCLUDED.PACKAGES')
-            elif flag in options['config']:
-                add(complete_flag, to='INCLUDED.OPTIONS')
-        except TypeError:
-            click.echo(click.style(flag + ' requires an argument', fg='red'))
-
-        if flag in ogr:
-            add(flag, to='INCLUDED.FORMATS.OGR')
-            # add(flag, to='INCLUDED.DEPENDENCIES')
-
-        elif flag in gdal:
-            add(flag, to='INCLUDED.FORMATS.GDAL')
-            # add(flag, to='INCLUDED.DEPENDENCIES')
-
-        # if flag in dependencies:
-        #     add(flag, to='INCLUDED.DEPENDENCIES')
-    for flag in exclude:
-        add(flag, 'EXCLUDED.DEPENDENCIES')
-        if flag in gdal:
-            add(flag, 'EXCLUDED.FORMATS.GDAL')
-            # add(flag, 'EXCLUDED.DEPENDENCIES')
-        elif flag in ogr:
-            add(flag, 'EXCLUDED.FORMATS.OGR')
-            # add(flag, 'EXCLUDED.DEPENDENCIES')
-
-        if flag in options['package']:
-            add(flag, 'EXCLUDED.PACKAGES')
-        # if flag in dependencies:
-            # add(flag, 'EXCLUDED.DEPENDENCIES')
-
-    if ch.level == logging.DEBUG:
-        pprint(ctx.obj)
+def main(ctx, root, debug):
+    'A command-line utility for testing your GDAL configuration and build.'
+    ctx.obj['root'] = root
+    ctx.obj['level'] = logging.DEBUG if debug else logging.ERROR
 
 
-@main.command(short_help='test dependencies/format support/gdal version')
+@main.command(
+    'config',
+    short_help='test package inclusion in the output of gdal/configure \
+    [options] --cache-file'
+    )
 @click.option(
     '--path-to-config-log', 'config_log_path', default='./configure.log',
     envvar='PATH_TO_GDAL_CONFIG_LOG', type=click.Path(),
     help='a relative or absolute path to the logged output of gdal/configure'
 )
 @click.option(
-    '--formats', is_flag=True, default=False,
-    help='whether to test the command line gdal/ogr utilities for format \
-    availabilities'
-)
+    '--with', 'include', type=str, envvar='TEST_GDAL_CONFIGURED_WITH',
+    multiple=True,
+    help='Searches the output of gdal/configure to ensure packages are \
+     present.', metavar='<package...>'
+     )
 @click.option(
-    '--dependencies', is_flag=True, default=False,
-    help='whether to run tests on the support libraries available at the \
-    command line after building'
-)
+    '--without', 'exclude', type=str, envvar='TEST_GDAL_CONFIGURED_WITHOUT',
+    multiple=True, help='Searches the output of gdal/configure to ensure \
+    packages are absent', metavar='<package...>'
+    )
+@click.option(
+    '--search', 'searches', type=str, envvar='TEST_GDAL_CONFIG_SEARCHES',
+    multiple=True, metavar='<regex...>',
+    help='''
+    case-insensitive python regex searches of the form:
+      "match_line:::(success)|(failure)|(pass)"
+    match_line: a name that if matched will run the test
+
+    ::: an optional separator to treat 1 as a --with option
+
+    success The match group that indicates the test succeeded ( \
+    optionally named with success)
+
+    failure: The match group that indicates the test failes ( \
+    optionally named fail or failure)
+
+    pass: the match group that indicates the test was not passing but \
+    not fatal (optionally named pass)
+
+    Gotchas: must be quoted. Success overrides failure overrides pass; named \
+    groups override group order.
+    '''
+    )
+@click.pass_context
+def config(ctx, config_log_path, include, exclude, searches):
+    '''
+    Tests the the output of gdal/configure for inclusion/exclusion of  \
+    dependencies, and supports custom regex-based testing
+
+    EXAMPLES:\n
+      # The command must have a reference to the output of gdal/configure:\t
+      # any of \n
+      test-gdal-build --root="path/to/gdal/directory" config [...]\t\t
+      PATH_TO_GDAL_CONFIG_LOG="..." test-gdal-build config [...]\t\t
+      test-gdal-build test --path-to-config-log="..." [...]\n
+      # search the configure output for included/excluded packages\n
+      test-gdal-build --with foo --with bar --without baz\n
+      # or\n
+      TEST_GDAL_CONFIGURED_WITH="foo bar"\t\t\t\t
+      TEST_GDAL_CONFIGURED_WITHOUT="baz"\t\t\t\t
+      test-gdal-build config\n
+      # use custom regex to search the configuration log \t\t\t
+      # (ironically not gdal/config.log)\n
+      # run case-insensitive tests on lines including the search prefix\t\t
+      test-gdal-build config --search postgis:::(yes)|(no)|(internal)\t\t\t
+      test-gdal-build config --search postgis:::(?P<fail>no)|(?P<success>yes)\t
+      # or test every line\t\t\t\t\t\t\t
+      test-gdal-build config --search "postgis\.\.\.\s(yes)|(no)|(internal)"
+    '''
+    if ctx.obj['root']:
+        config_log_path = os.path.join(ctx.obj['root'], config_log_path)
+    debug(''.join(map(str, [include, exclude])))
+    with open(config_log_path) as config_log_file:
+        config_log = config_log_file.read()
+        tests_passed = test_config_log(
+            config_log,
+            include,
+            exclude,
+            searches,
+            level=ctx.obj['level']
+        )
+        if not tests_passed:
+            os._exit(1)
+
+
+@main.command(short_help='tests for the gdal command line interface')
+@click.option(
+    '--with', 'include', multiple=True, type=str,
+    default=[], envvar='TEST_GDAL_CLI_INCLUDES', metavar='<format...>',
+    help='checks a format is not present in gdal or ogr'
+    )
+@click.option(
+    '--without', 'exclude', multiple=True, type=str,
+    default=[], envvar='TEST_GDAL_CLI_EXCLUDES', metavar='<format...>',
+    help='checks a format is not present in gdal or ogr'
+    )
 @click.option(
     '--version-is', 'version_is', type=str,
     help="Tests whether the cli version is correct via regex"
-)
-@click.option(
-    '--search', 'searches', type=str, envvar='CONFIG_LOG_SEARCHES',
-    multiple=True,
-    help='custom searches using regular expressions from python\'s `re` \
-     module.  To use the default f'
-)
+    )
 @click.pass_context
-def test(ctx, config_log_path, dependencies, formats, version_is, searches):
-    it_works = True
+def cli(ctx, include, exclude, version_is):
+    """
+    Tests the inclusion/exclusion of formats from the gdal command-line \
+    interface and installed version of gdal.
 
-    if dependencies:
-        with open(config_log_path) as config_log_file:
-            config_log = config_log_file.read()
-            it_works &= test_config_log(
-                config_log,
-                ctx.obj['INCLUDED']['DEPENDENCIES'],
-                ctx.obj['EXCLUDED']['DEPENDENCIES'],
-                searches,
-                level=ctx.obj['LEVEL']
-            )
-    if formats:
-        it_works &= test_formats(
-            ogr_include=ctx.obj['INCLUDED']['FORMATS']['OGR'],
-            ogr_exclude=ctx.obj['EXCLUDED']['FORMATS']['OGR'],
-            gdal_exclude=ctx.obj['EXCLUDED']['FORMATS']['GDAL'],
-            gdal_include=ctx.obj['INCLUDED']['FORMATS']['GDAL'],
-            level=ctx.obj['LEVEL']
+    EXAMPLES:\n
+      # test the inclusion / exclusion of multiple gdal & ogr formats\n
+      test-gdal-build cli --with spatialite --with pdf\t\t\t
+      test-gdal-build cli --without geojson --without georss\n
+      # For large or iterative tests, store the in/exclusions in environment\t
+      # variables\n
+      TEST_GDAL_CLI_EXCLUDES="geojson georss"\t\t\t\t\t
+      TEST_GDAL_CLI_INCLUDES="spatialite pdf"\t\t\t\t\t
+      test-gdal-build cli
+    """
+    # note click strips unescaped whitespace, including newlines. Escaping a
+    # newline \n seems to block stripping the of the invisible newline.
+    # Using \ts to pad out the 80-char limit seems to work best.
+    tests_passed = True
+    if include or exclude:
+        for fmt in set(include).union(exclude).difference(ogr.union(gdal)):
+            msg = fmt + ' is not a recognized gdal/ogr format'
+            click.echo(click.style(msg, fg='yellow'))
+        tests_passed &= test_formats(
+            ogr_include=ogr.intersection(include),
+            ogr_exclude=ogr.intersection(exclude),
+            gdal_exclude=gdal.intersection(exclude),
+            gdal_include=gdal.intersection(include),
+            level=ctx.obj['level']
         )
-
     if version_is:
-        it_works &= test_version_is(version_is)
-
-
-@main.command(
-    'config-command', short_help="echo a gdal configuration[, make] command"
-)
-@click.option(
-    '--path-to-config-command', '-c', type=str, default='./configure',
-    help='the path to the gdal configuration script'
-    # store as internal variable?
-)
-@click.option('--save-to', default='', help='if/where to save the command')
-# @click.option('--cols', type=int, default=1)
-# @click.option('--max-width', type=int, default=80)
-# @click.option('--make', is_flag=True, help='include the make command') # TODO
-@click.pass_context
-def command(ctx, path_to_config_command, save_to):
-    def get(name): return lookup(name, ctx.obj)
-    included = get('INCLUDED.PACKAGES')
-    excluded = get('EXCLUDED.PACKAGES')
-    command = [path_to_config_command] + \
-        ['    --with-' + fmt for fmt in included] + \
-        ['    --without-' + fmt for fmt in excluded]
-    command = ' \\\n'.join(command)
-    # if make:
-    #   command = 'make clean\n' + command + 'make\nmake install'
-    click.echo(command)
-    if save_to:
-        with open(save_to, 'w') as target:
-            target.write(command)
+        tests_passed &= test_version_is(version_is)
+    if not tests_passed:
+        os._exit(1)
 
 
 if __name__ == "__main__":
@@ -235,36 +193,4 @@ if __name__ == "__main__":
     gdal = set(load('gdal_formats_set.json'))
     formats = gdal.union(ogr)
     dependencies = set(load('dependencies_set.json'))
-    options = {  # setify(json.loads(os.path.join(__location__, '...')))
-        'excludable': set(load(('excluded_flags.json'))),
-        'includable': set(load('included_flags.json')),
-        'flags': set(load('flags.json')),
-        'require_arguments': set(load('options_requiring_argument.json')),
-        'has_default': set(load('options_with_default.json'))
-    }
-    options['all'] = options['includable']\
-        .union(options['excludable'])\
-        .union(options['require_arguments'])\
-        .union(options['has_default'])\
-        .union(options['flags'])
-    options['package'] = options['includable'].union(options['excludable'])
-    options['config'] = options['all'].difference(options['package'])
-    main(obj={
-        'INCLUDED': {
-            'FORMATS': {           # for format test
-                'GDAL': set(),
-                'OGR': set()
-            },
-            'OPTIONS': set(),       # for command building
-            'DEPENDENCIES': set(),  # for config testing
-            'PACKAGES': set()       # for command building
-        },
-        'EXCLUDED': {
-            'FORMATS': {            # for format test
-                'GDAL': set(),
-                'OGR': set()
-            },
-            'DEPENDENCIES': set(),  # for config test
-            'PACKAGES': set()       # for command building
-        }
-    })
+    main(obj={})
