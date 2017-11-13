@@ -13,12 +13,13 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'Click>=6.0',
-    # TODO: put package requirements here
+    'json'
+    # put additional package requirements here
 ]
 
 setup_requirements = [
     'pytest-runner',
-    # TODO(skalt): put setup requirements (distutils extensions, etc.) here
+    # additional setup requirements (distutils extensions, etc.) go here
 ]
 
 test_requirements = [
@@ -29,7 +30,8 @@ test_requirements = [
 setup(
     name='gdal_build_debug',
     version='0.1.0',
-    description="A pytest suite to test whether gdal built with what you wanted",
+    description='A suite of tests of whether gdal configured/built with the packages and\
+    formats you wanted',
     long_description=readme + '\n\n' + history,
     author="Steven Kalt",
     author_email='kalt.steven@gmail.com',
@@ -37,14 +39,14 @@ setup(
     packages=find_packages(include=['gdal_build_debug']),
     entry_points={
         'console_scripts': [
-            'gdal_build_debug=gdal_build_debug.cli:main'
+            'gdal-build-debug=gdal_build_debug.cli'
         ]
     },
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='gdal_build_debug',
+    keywords='gdal,ogr,GIS,tests',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
