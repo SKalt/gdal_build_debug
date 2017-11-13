@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gdal_build_debug.config_test_fns &#8212; gdal_build_debug 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for gdal_build_debug.config_test_fns</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Functions supporting testing of the config log</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(name)-12s</span><span class="s1">: </span><span class="si">%(levelname)-8s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+<span class="n">ch</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+<span class="n">debug</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">debug</span>
+
+
+<div class="viewcode-block" id="check_result"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.check_result">[docs]</a><span class="k">def</span> <span class="nf">check_result</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns a boolean whether the test passed or encountered fatal failures.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        data: a list of tuples of the form (_, (str result, _), _, bool</span>
+<span class="sd">        essential)</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A boolean value whether all tests of essential lines or all test of</span>
+<span class="sd">            non-essential lines succeeded</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">essential_success</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">non_essential_success</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">essential_lines_present</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">_</span><span class="p">,</span> <span class="n">essential</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">essential</span><span class="p">:</span>
+            <span class="n">essential_success</span> <span class="o">&amp;=</span> <span class="n">result</span> <span class="o">!=</span> <span class="s1">&#39;failure&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">essential_lines_present</span><span class="p">:</span>
+                <span class="n">essential_lines_present</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">essential_lines_present</span><span class="p">:</span>
+            <span class="n">non_essential_success</span> <span class="o">|=</span> <span class="n">result</span> <span class="o">!=</span> <span class="s1">&#39;failure&#39;</span>
+    <span class="k">if</span> <span class="n">essential_lines_present</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">essential_success</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">non_essential_success</span></div>
+
+
+<div class="viewcode-block" id="style_result"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.style_result">[docs]</a><span class="k">def</span> <span class="nf">style_result</span><span class="p">(</span><span class="n">line_num</span><span class="p">,</span> <span class="n">test_output</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">essential</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    echoes lines related to a test result with ANSI colors</span>
+<span class="sd">    Args:</span>
+<span class="sd">        line_num: 1-indexed int</span>
+<span class="sd">        test_output: a tuple (str or NoneType , (int start, int end))</span>
+<span class="sd">        line: the entire str line that was tested</span>
+<span class="sd">        essential: boolean value of whether the line is essential to package</span>
+<span class="sd">        inclusion</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">test_result</span><span class="p">,</span> <span class="n">indexes</span> <span class="o">=</span> <span class="n">test_output</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;white&#39;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;style_result input data &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test_output</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">test_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;passes&#39;</span><span class="p">:</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">indexes</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span>
+    <span class="k">elif</span> <span class="n">test_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;failure&#39;</span><span class="p">:</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">indexes</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;white&#39;</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">line_num</span><span class="p">,</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">start</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">),</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="n">color</span><span class="p">),</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="n">end</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)],</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">final</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="style_results"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.style_results">[docs]</a><span class="k">def</span> <span class="nf">style_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Echoes styled results to the command line and returns a boolean, whether</span>
+<span class="sd">    all tests passed.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        results: a dict mapping search name to a list of tuples representing</span>
+<span class="sd">        tested lines</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        a boolean, whether all tests passed</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">all_clear</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">quiet</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:-^80}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;configuration tests&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()):</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">if</span> <span class="n">check_result</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">quiet</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span>
+                        <span class="s1">&#39;</span><span class="si">{:31}</span><span class="s1">:  </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">key</span><span class="p">,</span>
+                            <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;✓&#39;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">all_clear</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">quiet</span><span class="p">:</span>
+                <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">{:31}</span><span class="s1">:  </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">key</span><span class="p">,</span>
+                        <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;×&#39;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">style_result</span><span class="p">(</span><span class="o">*</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">all_clear</span></div>
+
+
+<div class="viewcode-block" id="get_group"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.get_group">[docs]</a><span class="k">def</span> <span class="nf">get_group</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="o">*</span><span class="n">names</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns the first resolved regex match group from the given identifiers</span>
+<span class="sd">    Args:</span>
+<span class="sd">        match: a re.match object</span>
+<span class="sd">        names: multiple int or str group indexes/names, in the order they</span>
+<span class="sd">        should be tried</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        a tuple of the start and end indexes of the match group</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># try the next name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span>  <span class="c1"># return None if no recognized name present</span></div>
+
+
+<span class="c1"># unit testing material</span>
+<span class="c1"># match = re.match(&#39;abc: (?P&lt;a&gt;1)&#39;, &#39;abc: 1&#39;)</span>
+<span class="c1"># assert not get_pass(match)</span>
+<span class="c1"># assert get_success(match)</span>
+<span class="c1"># assert not get_failure(match)</span>
+
+
+<div class="viewcode-block" id="get_success"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.get_success">[docs]</a><span class="k">def</span> <span class="nf">get_success</span><span class="p">(</span><span class="n">match</span><span class="p">):</span>
+    <span class="s1">&#39;Returns a matched success condition or None&#39;</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="n">get_group</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="n">success</span><span class="p">)</span> <span class="k">if</span> <span class="n">success</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="get_pass"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.get_pass">[docs]</a><span class="k">def</span> <span class="nf">get_pass</span><span class="p">(</span><span class="n">match</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns a matched pass condition or None.</span>
+<span class="sd">    contains no group index since as an optional value, it must be explicityly</span>
+<span class="sd">    named</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">acceptable</span> <span class="o">=</span> <span class="n">get_group</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="s1">&#39;pass&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;pass&#39;</span><span class="p">,</span> <span class="n">acceptable</span><span class="p">)</span> <span class="k">if</span> <span class="n">acceptable</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_failure"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.get_failure">[docs]</a><span class="k">def</span> <span class="nf">get_failure</span><span class="p">(</span><span class="n">match</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns a matched failure condition or None.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">failure</span> <span class="o">=</span> <span class="n">get_group</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="s1">&#39;fail&#39;</span><span class="p">,</span> <span class="s1">&#39;failure&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;failure&#39;</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span> <span class="k">if</span> <span class="n">failure</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="default_filter"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.default_filter">[docs]</a><span class="k">def</span> <span class="nf">default_filter</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns a string to test iff the query matches the line</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:|(\.\.\.)&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="c1">#                       ^ the default line / result separator</span>
+        <span class="k">return</span> <span class="n">split</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="default_test"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.default_test">[docs]</a><span class="k">def</span> <span class="nf">default_test</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">present</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">accept_internal</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns a test response tuple based on a given response string</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s1">&#39;present&#39;</span> <span class="k">if</span> <span class="n">present</span> <span class="k">else</span> <span class="s1">&#39;absent&#39;</span>
+        <span class="n">passes_test</span> <span class="o">=</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">, expected </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s1">&#39;success&#39;</span> <span class="k">if</span> <span class="n">passes_test</span> <span class="k">else</span> <span class="s1">&#39;failure&#39;</span>
+
+    <span class="k">def</span> <span class="nf">make_answer</span><span class="p">(</span><span class="n">answer</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">resolve</span><span class="p">(</span><span class="n">answer</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="p">)))</span>
+    <span class="n">failing_answers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="s1">&#39;disabled&#39;</span><span class="p">,</span> <span class="s1">&#39;not found&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">a</span> <span class="ow">in</span> <span class="n">response</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="s1">&#39;none needed&#39;</span><span class="p">]]):</span>
+        <span class="k">return</span> <span class="n">make_answer</span><span class="p">(</span><span class="s1">&#39;present&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="n">a</span> <span class="ow">in</span> <span class="n">response</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">failing_answers</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">accept_internal</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">make_answer</span><span class="p">(</span><span class="s1">&#39;present&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">make_answer</span><span class="p">(</span><span class="s1">&#39;present&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">make_answer</span><span class="p">(</span><span class="s1">&#39;absent&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="regex_filter"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.regex_filter">[docs]</a><span class="k">def</span> <span class="nf">regex_filter</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns a regex match or None</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">regex_test</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">to_test</span><span class="p">):</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">to_test</span><span class="p">)</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">to_test</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="k">else</span> <span class="n">to_test</span>
+    <span class="c1"># logger.debug(&#39;success: {}&#39;.format(get_success(match)))</span>
+    <span class="c1"># logger.debug(&#39;failure: {}&#39;.format(get_failure(match)))</span>
+    <span class="k">return</span> <span class="n">get_success</span><span class="p">(</span><span class="n">match</span><span class="p">)</span> <span class="ow">or</span> <span class="n">get_failure</span><span class="p">(</span><span class="n">match</span><span class="p">)</span> <span class="ow">or</span> <span class="n">get_pass</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+
+<span class="c1"># unit testing material:</span>
+<span class="c1"># def check_response(resp_obj):</span>
+<span class="c1">#  assert type(resp_obj) is tuple;</span>
+<span class="c1">#  assert len(resp_obj) == 4</span>
+<span class="c1">#  line_num, test_resp, line, is_essential = resp_obj</span>
+<span class="c1">#  assert type(line_num) is int</span>
+<span class="c1">#  assert type(test_success) is str or test_success is None</span>
+<span class="c1">#  test_success, (start, end) = test_resp</span>
+<span class="c1">#  assert start is None or type(start) is int</span>
+<span class="c1">#  assert end is None or type(end) is int</span>
+<span class="c1">#  assert type(line) is str</span>
+<span class="c1">#  assert type(is_essential) is bool</span>
+
+
+<div class="viewcode-block" id="is_regex_str"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.is_regex_str">[docs]</a><span class="k">def</span> <span class="nf">is_regex_str</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="s1">&#39;a naive check of whether a str is intended to be regex&#39;</span>
+    <span class="k">return</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="ow">in</span> <span class="n">query</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="s1">&#39;[()]</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="make_test"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.make_test">[docs]</a><span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">present</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">accept_internal</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns a test function of whether a passed line succeeded or not</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;:::&#39;</span><span class="p">)</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">or</span> <span class="n">query</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">is_regex_str</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+        <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">regex_test</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">default_test</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">present</span><span class="p">,</span> <span class="n">accept_internal</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">test</span></div>
+
+
+<div class="viewcode-block" id="make_search"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.make_search">[docs]</a><span class="k">def</span> <span class="nf">make_search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="s1">&#39;returns a filter function based on a query&#39;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;query is not a string&#39;</span><span class="p">)</span>
+    <span class="c1"># the search for matching lines</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:::&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">is_regex_str</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+        <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">complile</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">regex_filter</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">default_filter</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">search</span></div>
+
+
+<div class="viewcode-block" id="check_lines"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.check_lines">[docs]</a><span class="k">def</span> <span class="nf">check_lines</span><span class="p">(</span><span class="n">filter_fn</span><span class="p">,</span> <span class="n">test_fn</span><span class="p">,</span> <span class="n">config_log_lines</span><span class="p">,</span> <span class="n">essential</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Pipes all lines through the filter- and test_fns, returns the resulting</span>
+<span class="sd">    list of tuples</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">config_log_lines</span><span class="p">):</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">filter_fn</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> -&gt; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">match</span><span class="p">))</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">test_fn</span><span class="p">(</span><span class="n">match</span><span class="p">),</span> <span class="n">line</span><span class="p">,</span> <span class="n">essential</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<span class="k">def</span> <span class="nf">parse_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">query_type</span><span class="p">):</span>
+    <span class="n">search_fn</span> <span class="o">=</span> <span class="n">make_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query_type</span> <span class="o">==</span> <span class="s1">&#39;regex&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">search_fn</span><span class="p">,</span> <span class="n">make_test</span><span class="p">(</span><span class="n">query</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">formatted_query</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">query_type</span><span class="p">)</span>
+        <span class="n">is_present</span> <span class="o">=</span> <span class="n">query_type</span> <span class="o">==</span> <span class="s1">&#39;present&#39;</span>
+        <span class="k">return</span> <span class="n">formatted_query</span><span class="p">,</span> <span class="n">search_fn</span><span class="p">,</span> <span class="n">make_test</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">present</span><span class="o">=</span><span class="n">is_present</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../code.html#gdal_build_debug.config_test_fns.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+    <span class="n">config_log</span><span class="p">,</span> <span class="n">lib_present</span><span class="p">,</span> <span class="n">lib_absent</span><span class="p">,</span> <span class="n">searches</span><span class="p">,</span> <span class="n">accept_internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+<span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Given a string config_log, and an iterable of queries (either supported</span>
+<span class="sd">    libraries or custom searches), runs the full &#39;test suite&#39;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ch</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+    <span class="n">checks</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">support</span> <span class="o">=</span> <span class="n">config_log</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;GDAL is now configured&#39;</span><span class="p">)</span>
+    <span class="n">checks_lines</span><span class="p">,</span> <span class="n">support_lines</span> <span class="o">=</span> <span class="n">checks</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">support</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">queries</span> <span class="o">=</span> <span class="p">[</span><span class="n">parse_query</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="s1">&#39;present&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">lib_present</span><span class="p">]</span>
+    <span class="n">queries</span> <span class="o">+=</span> <span class="p">[</span><span class="n">parse_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="s1">&#39;regex&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">searches</span><span class="p">]</span>
+    <span class="n">queries</span> <span class="o">+=</span> <span class="p">[</span><span class="n">parse_query</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="s1">&#39;absent&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">lib_absent</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">_query</span><span class="p">,</span> <span class="n">search_fn</span><span class="p">,</span> <span class="n">test_fn</span> <span class="ow">in</span> <span class="n">queries</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">_query</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_lines</span><span class="p">(</span><span class="n">search_fn</span><span class="p">,</span> <span class="n">test_fn</span><span class="p">,</span> <span class="n">support_lines</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">_query</span><span class="p">]</span> <span class="o">+=</span> <span class="n">check_lines</span><span class="p">(</span><span class="n">search_fn</span><span class="p">,</span> <span class="n">test_fn</span><span class="p">,</span> <span class="n">checks_lines</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">style_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Steven Kalt.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

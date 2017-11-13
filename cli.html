@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &#8212; gdal_build_debug 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>Usage: gdal-build-debug [OPTIONS] COMMAND [ARGS]...</p>
+<blockquote>
+<div>A command-line utility for testing your GDAL configuration and build.</div></blockquote>
+<dl class="docutils">
+<dt>Options:</dt>
+<dd><table class="first last docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">--root <var>TEXT</var></span></kbd></td>
+<td>root path for relative paths</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--debug</span></kbd></td>
+<td>whether to include debug logs in output</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--help</span></kbd></td>
+<td>Show this message and exit.</td></tr>
+</tbody>
+</table>
+</dd>
+<dt>Commands:</dt>
+<dd><p class="first">cli     tests for the gdal command line interface
+config  test package inclusion in the output of gdal/configure     [options]</p>
+<blockquote class="last">
+<div>&#8211;cache-file</div></blockquote>
+</dd>
+</dl>
+<p>Usage: gdal-build-debug config [OPTIONS]</p>
+<blockquote>
+<div><p>Tests the the output of gdal/configure for inclusion/exclusion of
+dependencies, and supports custom regex-based testing</p>
+<p>EXAMPLES:</p>
+<blockquote>
+<div><p># The command must have a reference to the output of gdal/configure:
+# any of</p>
+<p>test-gdal-build &#8211;root=&#8221;path/to/gdal/directory&#8221; config [...]
+PATH_TO_GDAL_CONFIG_LOG=&#8221;...&#8221; test-gdal-build config [...]
+test-gdal-build test &#8211;path-to-config-log=&#8221;...&#8221; [...]</p>
+<p># search the configure output for included/excluded packages</p>
+<p>test-gdal-build &#8211;with foo &#8211;with bar &#8211;without baz</p>
+<p># or</p>
+<p>TEST_GDAL_CONFIGURED_WITH=&#8221;foo bar&#8221;
+TEST_GDAL_CONFIGURED_WITHOUT=&#8221;baz&#8221;
+test-gdal-build config</p>
+<p># use custom regex to search the configuration log
+# (ironically not gdal/config.log)</p>
+<p># run case-insensitive tests on lines including the search prefix
+test-gdal-build config &#8211;search postgis:::(yes)|(no)|(internal)
+test-gdal-build config &#8211;search postgis:::(?P&lt;fail&gt;no)|(?P&lt;success&gt;yes)
+# or test every line
+test-gdal-build config &#8211;search &#8220;postgis...s(yes)|(no)|(internal)&#8221;</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="docutils">
+<dt>Options:</dt>
+<dd><table class="first last docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--path-to-config-log <var>PATH</var></span></kbd></td>
+</tr>
+<tr><td>&#160;</td><td>a relative or absolute path to the logged output
+of gdal/configure</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--with <var>&lt;package...&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&#160;</td><td>Searches the output of gdal/configure to ensure
+packages are      present.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--without <var>&lt;package...&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&#160;</td><td>Searches the output of gdal/configure to ensure
+packages are absent</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--search <var>&lt;regex...&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&#160;</td><td><p class="first">case-insensitive python regex searches of the
+form:</p>
+<blockquote>
+<div>&#8220;match_line:::(success)|(failure)|(pass)&#8221;</div></blockquote>
+<p>match_line: a name that if matched will run the
+test</p>
+<p>::: an optional separator to treat 1 as a
+&#8211;with option</p>
+<p>success The match group that
+indicates the test succeeded (     optionally
+named with success)</p>
+<p>failure: The match group
+that indicates the test failes (     optionally
+named fail or failure)</p>
+<p>pass: the match group
+that indicates the test was not passing but
+not fatal (optionally named pass)</p>
+<p class="last">Gotchas: must
+be quoted. Success overrides failure overrides
+pass; named     groups override group order.</p>
+</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--help</span></kbd></td>
+<td>Show this message and exit.</td></tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>Usage: gdal-build-debug cli [OPTIONS]</p>
+<blockquote>
+<div><p>Tests the inclusion/exclusion of formats from the gdal command-line
+interface and installed version of gdal.</p>
+<p>EXAMPLES:</p>
+<blockquote>
+<div><p># test the inclusion / exclusion of multiple gdal &amp; ogr formats</p>
+<p>test-gdal-build cli &#8211;with spatialite &#8211;with pdf
+test-gdal-build cli &#8211;without geojson &#8211;without georss</p>
+<p># For large or iterative tests, store the in/exclusions in environment
+# variables</p>
+<p>TEST_GDAL_CLI_EXCLUDES=&#8221;geojson georss&#8221;
+TEST_GDAL_CLI_INCLUDES=&#8221;spatialite pdf&#8221;
+test-gdal-build cli</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="docutils">
+<dt>Options:</dt>
+<dd><table class="first last docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--with <var>&lt;format...&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&#160;</td><td>checks a format is not present in gdal or ogr</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--without <var>&lt;format...&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&#160;</td><td>checks a format is not present in gdal or ogr</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--version-is <var>TEXT</var></span></kbd></td>
+</tr>
+<tr><td>&#160;</td><td>Tests whether the cli version is correct via regex</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--help</span></kbd></td>
+<td>Show this message and exit.</td></tr>
+</tbody>
+</table>
+</dd>
+</dl>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cli.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Steven Kalt.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

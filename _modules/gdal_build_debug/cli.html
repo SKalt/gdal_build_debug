@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gdal_build_debug.cli &#8212; gdal_build_debug 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for gdal_build_debug.cli</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Console script for gdal_build_debug.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="c1"># import subprocess</span>
+<span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">.config_test_fns</span> <span class="k">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">test_config_log</span>
+<span class="kn">from</span> <span class="nn">.cli_test_fns</span> <span class="k">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">test_formats</span>
+<span class="kn">from</span> <span class="nn">.cli_test_fns</span> <span class="k">import</span> <span class="n">test_version_is</span>
+
+<span class="c1"># establish globals</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(name)-12s</span><span class="s1">: </span><span class="si">%(levelname)-8s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+<span class="n">ch</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+<span class="n">ch</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+<span class="n">debug</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">debug</span>
+
+
+<span class="n">__location__</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../../index.html#gdal_build_debug.cli.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">):</span>
+    <span class="s2">&quot;load pickled sets of normalized format codes&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">__location__</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">,</span> <span class="n">json_file</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">_json</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">_json</span><span class="p">)</span></div>
+
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;test-gdal-build&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--root&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;root path for relative paths&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s1">&#39;--debug&#39;</span><span class="p">,</span> <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;whether to include debug logs in output&#39;</span>
+    <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">pass_context</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
+    <span class="s1">&#39;A command-line utility for testing your GDAL configuration and build.&#39;</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;root&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">root</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span> <span class="k">if</span> <span class="n">debug</span> <span class="k">else</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span>
+
+
+<span class="nd">@main</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
+    <span class="s1">&#39;config&#39;</span><span class="p">,</span>
+    <span class="n">short_help</span><span class="o">=</span><span class="s1">&#39;test package inclusion in the output of gdal/configure </span><span class="se">\</span>
+<span class="s1">    [options] --cache-file&#39;</span>
+    <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s1">&#39;--path-to-config-log&#39;</span><span class="p">,</span> <span class="s1">&#39;config_log_path&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;./configure.log&#39;</span><span class="p">,</span>
+    <span class="n">envvar</span><span class="o">=</span><span class="s1">&#39;PATH_TO_GDAL_CONFIG_LOG&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Path</span><span class="p">(),</span>
+    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;a relative or absolute path to the logged output of gdal/configure&#39;</span>
+    <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s1">&#39;--with&#39;</span><span class="p">,</span> <span class="s1">&#39;include&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">envvar</span><span class="o">=</span><span class="s1">&#39;TEST_GDAL_CONFIGURED_WITH&#39;</span><span class="p">,</span>
+    <span class="n">multiple</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Searches the output of gdal/configure to ensure packages are </span><span class="se">\</span>
+<span class="s1">     present.&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;package...&gt;&#39;</span>
+     <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s1">&#39;--without&#39;</span><span class="p">,</span> <span class="s1">&#39;exclude&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">envvar</span><span class="o">=</span><span class="s1">&#39;TEST_GDAL_CONFIGURED_WITHOUT&#39;</span><span class="p">,</span>
+    <span class="n">multiple</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Searches the output of gdal/configure to ensure </span><span class="se">\</span>
+<span class="s1">    packages are absent&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;package...&gt;&#39;</span>
+    <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s1">&#39;--search&#39;</span><span class="p">,</span> <span class="s1">&#39;searches&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">envvar</span><span class="o">=</span><span class="s1">&#39;TEST_GDAL_CONFIG_SEARCHES&#39;</span><span class="p">,</span>
+    <span class="n">multiple</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;regex...&gt;&#39;</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    case-insensitive python regex searches of the form:</span>
+<span class="s1">      &quot;match_line:::(success)|(failure)|(pass)&quot;</span>
+<span class="s1">    match_line: a name that if matched will run the test</span>
+
+<span class="s1">    ::: an optional separator to treat 1 as a --with option</span>
+
+<span class="s1">    success The match group that indicates the test succeeded ( </span><span class="se">\</span>
+<span class="s1">    optionally named with success)</span>
+
+<span class="s1">    failure: The match group that indicates the test failes ( </span><span class="se">\</span>
+<span class="s1">    optionally named fail or failure)</span>
+
+<span class="s1">    pass: the match group that indicates the test was not passing but </span><span class="se">\</span>
+<span class="s1">    not fatal (optionally named pass)</span>
+
+<span class="s1">    Gotchas: must be quoted. Success overrides failure overrides pass; named </span><span class="se">\</span>
+<span class="s1">    groups override group order.</span>
+<span class="s1">    &#39;&#39;&#39;</span>
+    <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">pass_context</span>
+<span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">config_log_path</span><span class="p">,</span> <span class="n">include</span><span class="p">,</span> <span class="n">exclude</span><span class="p">,</span> <span class="n">searches</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Tests the the output of gdal/configure for inclusion/exclusion of  \</span>
+<span class="sd">    dependencies, and supports custom regex-based testing</span>
+
+<span class="sd">    EXAMPLES:\n</span>
+<span class="sd">      # The command must have a reference to the output of gdal/configure:\t</span>
+<span class="sd">      # any of \n</span>
+<span class="sd">      test-gdal-build --root=&quot;path/to/gdal/directory&quot; config [...]\t\t</span>
+<span class="sd">      PATH_TO_GDAL_CONFIG_LOG=&quot;...&quot; test-gdal-build config [...]\t\t</span>
+<span class="sd">      test-gdal-build test --path-to-config-log=&quot;...&quot; [...]\n</span>
+<span class="sd">      # search the configure output for included/excluded packages\n</span>
+<span class="sd">      test-gdal-build --with foo --with bar --without baz\n</span>
+<span class="sd">      # or\n</span>
+<span class="sd">      TEST_GDAL_CONFIGURED_WITH=&quot;foo bar&quot;\t\t\t\t</span>
+<span class="sd">      TEST_GDAL_CONFIGURED_WITHOUT=&quot;baz&quot;\t\t\t\t</span>
+<span class="sd">      test-gdal-build config\n</span>
+<span class="sd">      # use custom regex to search the configuration log \t\t\t</span>
+<span class="sd">      # (ironically not gdal/config.log)\n</span>
+<span class="sd">      # run case-insensitive tests on lines including the search prefix\t\t</span>
+<span class="sd">      test-gdal-build config --search postgis:::(yes)|(no)|(internal)\t\t\t</span>
+<span class="sd">      test-gdal-build config --search postgis:::(?P&lt;fail&gt;no)|(?P&lt;success&gt;yes)\t</span>
+<span class="sd">      # or test every line\t\t\t\t\t\t\t</span>
+<span class="sd">      test-gdal-build config --search &quot;postgis\.\.\.\s(yes)|(no)|(internal)&quot;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;root&#39;</span><span class="p">]:</span>
+        <span class="n">config_log_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;root&#39;</span><span class="p">],</span> <span class="n">config_log_path</span><span class="p">)</span>
+    <span class="n">debug</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="p">[</span><span class="n">include</span><span class="p">,</span> <span class="n">exclude</span><span class="p">])))</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_log_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">config_log_file</span><span class="p">:</span>
+        <span class="n">config_log</span> <span class="o">=</span> <span class="n">config_log_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">tests_passed</span> <span class="o">=</span> <span class="n">test_config_log</span><span class="p">(</span>
+            <span class="n">config_log</span><span class="p">,</span>
+            <span class="n">include</span><span class="p">,</span>
+            <span class="n">exclude</span><span class="p">,</span>
+            <span class="n">searches</span><span class="p">,</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tests_passed</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">_exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="nd">@main</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">short_help</span><span class="o">=</span><span class="s1">&#39;tests for the gdal command line interface&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s1">&#39;--with&#39;</span><span class="p">,</span> <span class="s1">&#39;include&#39;</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="p">[],</span> <span class="n">envvar</span><span class="o">=</span><span class="s1">&#39;TEST_GDAL_CLI_INCLUDES&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;format...&gt;&#39;</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;checks a format is not present in gdal or ogr&#39;</span>
+    <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s1">&#39;--without&#39;</span><span class="p">,</span> <span class="s1">&#39;exclude&#39;</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="p">[],</span> <span class="n">envvar</span><span class="o">=</span><span class="s1">&#39;TEST_GDAL_CLI_EXCLUDES&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;format...&gt;&#39;</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;checks a format is not present in gdal or ogr&#39;</span>
+    <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s1">&#39;--version-is&#39;</span><span class="p">,</span> <span class="s1">&#39;version_is&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Tests whether the cli version is correct via regex&quot;</span>
+    <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">pass_context</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">include</span><span class="p">,</span> <span class="n">exclude</span><span class="p">,</span> <span class="n">version_is</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tests the inclusion/exclusion of formats from the gdal command-line \</span>
+<span class="sd">    interface and installed version of gdal.</span>
+
+<span class="sd">    EXAMPLES:\n</span>
+<span class="sd">      # test the inclusion / exclusion of multiple gdal &amp; ogr formats\n</span>
+<span class="sd">      test-gdal-build cli --with spatialite --with pdf\t\t\t</span>
+<span class="sd">      test-gdal-build cli --without geojson --without georss\n</span>
+<span class="sd">      # For large or iterative tests, store the in/exclusions in environment\t</span>
+<span class="sd">      # variables\n</span>
+<span class="sd">      TEST_GDAL_CLI_EXCLUDES=&quot;geojson georss&quot;\t\t\t\t\t</span>
+<span class="sd">      TEST_GDAL_CLI_INCLUDES=&quot;spatialite pdf&quot;\t\t\t\t\t</span>
+<span class="sd">      test-gdal-build cli</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># note click strips unescaped whitespace, including newlines. Escaping a</span>
+    <span class="c1"># newline \n seems to block stripping the of the invisible newline.</span>
+    <span class="c1"># Using \ts to pad out the 80-char limit seems to work best.</span>
+    <span class="n">tests_passed</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">include</span> <span class="ow">or</span> <span class="n">exclude</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">include</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">exclude</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">ogr</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">gdal</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">fmt</span> <span class="o">+</span> <span class="s1">&#39; is not a recognized gdal/ogr format&#39;</span>
+            <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">))</span>
+        <span class="n">tests_passed</span> <span class="o">&amp;=</span> <span class="n">test_formats</span><span class="p">(</span>
+            <span class="n">ogr_include</span><span class="o">=</span><span class="n">ogr</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">include</span><span class="p">),</span>
+            <span class="n">ogr_exclude</span><span class="o">=</span><span class="n">ogr</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">exclude</span><span class="p">),</span>
+            <span class="n">gdal_exclude</span><span class="o">=</span><span class="n">gdal</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">exclude</span><span class="p">),</span>
+            <span class="n">gdal_include</span><span class="o">=</span><span class="n">gdal</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">include</span><span class="p">),</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">version_is</span><span class="p">:</span>
+        <span class="n">tests_passed</span> <span class="o">&amp;=</span> <span class="n">test_version_is</span><span class="p">(</span><span class="n">version_is</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tests_passed</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">_exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># TODO: set all this up in setup-scripts and debrine this as a tuple</span>
+    <span class="n">ogr</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;ogr_formats_set.json&#39;</span><span class="p">))</span>
+    <span class="n">gdal</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;gdal_formats_set.json&#39;</span><span class="p">))</span>
+    <span class="n">formats</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">ogr</span><span class="p">)</span>
+    <span class="n">dependencies</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;dependencies_set.json&#39;</span><span class="p">))</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="p">{})</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Steven Kalt.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

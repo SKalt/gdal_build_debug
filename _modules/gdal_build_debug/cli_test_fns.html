@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gdal_build_debug.cli_test_fns &#8212; gdal_build_debug 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for gdal_build_debug.cli_test_fns</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(name)-12s</span><span class="s1">: </span><span class="si">%(levelname)-8s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+<span class="n">ch</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+<span class="c1"># ch.setLevel(logging.DEBUG)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_format_installed"><a class="viewcode-back" href="../../code.html#gdal_build_debug.cli_test_fns.check_format_installed">[docs]</a><span class="k">def</span> <span class="nf">check_format_installed</span><span class="p">(</span><span class="n">cli</span><span class="p">,</span> <span class="n">to_check</span><span class="p">,</span> <span class="n">is_present</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Checks a foramt is installed</span>
+<span class="sd">    Args:</span>
+<span class="sd">        cli: the str &#39;gdal&#39; or &#39;ogr&#39;: which command-line interface to test.</span>
+<span class="sd">        to_check: the str format to check is supported by the gdal cli.</span>
+<span class="sd">        is_present: whether or not the format should be present</span>
+<span class="sd">    Throws:</span>
+<span class="sd">        AssertionError: if the checked format is unexpectedly present / absent.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">to_check</span> <span class="o">==</span> <span class="s1">&#39;postgis&#39;</span> <span class="ow">or</span> <span class="n">to_check</span> <span class="o">==</span> <span class="s1">&#39;postgresql&#39;</span><span class="p">:</span>
+        <span class="n">to_check</span> <span class="o">=</span> <span class="s1">&#39;postgresql/postgis&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">cli</span><span class="p">,</span> <span class="s1">&#39;--format&#39;</span><span class="p">,</span> <span class="n">to_check</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_present</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">to_check</span> <span class="o">+</span> <span class="s1">&#39; is unexpectedly present&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">:</span>  <span class="c1"># as err</span>
+        <span class="c1"># logger.debug(err.args)</span>
+        <span class="k">if</span> <span class="n">is_present</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">to_check</span> <span class="o">+</span> <span class="s1">&#39; is unexpectedly absent&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="style_check"><a class="viewcode-back" href="../../code.html#gdal_build_debug.cli_test_fns.style_check">[docs]</a><span class="k">def</span> <span class="nf">style_check</span><span class="p">(</span><span class="n">cli</span><span class="p">,</span> <span class="n">to_check</span><span class="p">,</span> <span class="n">is_present</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Prints the styled results of testing whether a format is included.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        cli: the str &#39;gdalinfo&#39; or &#39;ogrinfo&#39;: which command-line interface to</span>
+<span class="sd">        test.</span>
+<span class="sd">        to_check: the str format to check is supported by the gdal cli.</span>
+<span class="sd">        is_present: whether or not the format should be present</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        test_success: the boolean value of whether or not the test succeeded.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">_cli</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">_present</span> <span class="o">=</span> <span class="s1">&#39;present in&#39;</span> <span class="k">if</span> <span class="n">is_present</span> <span class="k">else</span> <span class="s1">&#39;absent from&#39;</span>
+    <span class="k">if</span> <span class="n">cli</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gdalinfo&#39;</span><span class="p">,</span> <span class="s1">&#39;ogrinfo&#39;</span><span class="p">]:</span>
+        <span class="n">cli</span> <span class="o">=</span> <span class="s1">&#39;gdalinfo&#39;</span> <span class="k">if</span> <span class="s1">&#39;gdal&#39;</span> <span class="ow">in</span> <span class="n">cli</span> <span class="k">else</span> <span class="s1">&#39;ogrinfo&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">check_format_installed</span><span class="p">(</span><span class="n">cli</span><span class="p">,</span> <span class="n">to_check</span><span class="p">,</span> <span class="n">is_present</span><span class="p">)</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:14}</span><span class="s1"> </span><span class="si">{:11}</span><span class="s1"> </span><span class="si">{:4}</span><span class="s1">:  </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">to_check</span><span class="p">,</span>
+            <span class="n">_present</span><span class="p">,</span>
+            <span class="n">_cli</span><span class="p">,</span>
+            <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;✓&#39;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:14}</span><span class="s1"> </span><span class="si">{:11}</span><span class="s1"> </span><span class="si">{:4}</span><span class="s1">:  </span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">to_check</span><span class="p">,</span>
+            <span class="n">_present</span><span class="p">,</span>
+            <span class="n">_cli</span><span class="p">,</span>
+            <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;×&#39;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">),</span>
+            <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../code.html#gdal_build_debug.cli_test_fns.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+    <span class="n">ogr_include</span><span class="o">=</span><span class="p">[],</span> <span class="n">ogr_exclude</span><span class="o">=</span><span class="p">[],</span> <span class="n">gdal_include</span><span class="o">=</span><span class="p">[],</span> <span class="n">gdal_exclude</span><span class="o">=</span><span class="p">[],</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Runs and styles tests of whether formats are supported by gdal and ogr.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        ogr_include: an iterable of str format names to check are included in</span>
+<span class="sd">        ogr</span>
+<span class="sd">        ogr_exclude: an iterable of str format names to check are included in</span>
+<span class="sd">        ogr</span>
+<span class="sd">        gdal_include: an iterable of str format names to check are included in</span>
+<span class="sd">        gdal</span>
+<span class="sd">        gdal_exclude: an iterable of str format names to check are included in</span>
+<span class="sd">        gdal</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ch</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">quiet</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:-^80}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;command-line formats tests&#39;</span><span class="p">))</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gdal_include</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">&amp;=</span> <span class="n">style_check</span><span class="p">(</span><span class="s1">&#39;gdalinfo&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">is_present</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ogr_include</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">&amp;=</span> <span class="n">style_check</span><span class="p">(</span><span class="s1">&#39;ogrinfo&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">is_present</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gdal_exclude</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">&amp;=</span> <span class="n">style_check</span><span class="p">(</span><span class="s1">&#39;gdalinfo&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">is_present</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ogr_exclude</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">&amp;=</span> <span class="n">style_check</span><span class="p">(</span><span class="s1">&#39;ogrinfo&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">is_present</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_version_is"><a class="viewcode-back" href="../../code.html#gdal_build_debug.cli_test_fns.test_version_is">[docs]</a><span class="k">def</span> <span class="nf">test_version_is</span><span class="p">(</span><span class="n">expected</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Checks the gdal command-line version is the version you expect.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        expected: a str version number of the form</span>
+<span class="sd">        major_num.minor_num.patch_num</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        test_success: the boolean value of whether the expected version matched</span>
+<span class="sd">        the actual command-line version.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">called</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;gdalinfo&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+    <span class="p">)</span>
+    <span class="n">actual</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;\d+\.\d+\.\d+&#39;</span><span class="p">,</span> <span class="n">called</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">actual</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s1">&#39;expected version:  </span><span class="si">{}</span><span class="se">\n</span><span class="s1">actual version  :  </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">),</span>
+            <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+    <span class="c1"># ire.search(r&#39;(^~\*)|(&lt;&gt;)?(=)?(\d+)\.(\d.)\.(\d)&#39;, version).groups()</span>
+    <span class="c1"># npm_vr, op, eq, expected_major, expected_minor, expected_patch = expected</span>
+    <span class="c1"># parser = re.compile(r&#39;^GDAL (\d+)\.(\d+)\.(\d+)&#39;)</span>
+    <span class="c1"># parsed = parser.search(called.stdout.decode())</span>
+    <span class="c1"># major, minor, patch = map(int, parsed.groups())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Steven Kalt.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>

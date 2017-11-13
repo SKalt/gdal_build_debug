@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Code &#8212; gdal_build_debug 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="gdal_build_debug" href="readme.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="readme.html" title="gdal_build_debug"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-gdal_build_debug.cli_test_fns">
+<span id="code"></span><h1>Code<a class="headerlink" href="#module-gdal_build_debug.cli_test_fns" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="gdal_build_debug.cli_test_fns.check_format_installed">
+<code class="descclassname">gdal_build_debug.cli_test_fns.</code><code class="descname">check_format_installed</code><span class="sig-paren">(</span><em>cli</em>, <em>to_check</em>, <em>is_present=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/cli_test_fns.html#check_format_installed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.cli_test_fns.check_format_installed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks a foramt is installed
+:param cli: the str &#8216;gdal&#8217; or &#8216;ogr&#8217;: which command-line interface to test.
+:param to_check: the str format to check is supported by the gdal cli.
+:param is_present: whether or not the format should be present</p>
+<dl class="docutils">
+<dt>Throws:</dt>
+<dd>AssertionError: if the checked format is unexpectedly present / absent.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.cli_test_fns.main">
+<code class="descclassname">gdal_build_debug.cli_test_fns.</code><code class="descname">main</code><span class="sig-paren">(</span><em>ogr_include=[]</em>, <em>ogr_exclude=[]</em>, <em>gdal_include=[]</em>, <em>gdal_exclude=[]</em>, <em>level=40</em>, <em>quiet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/cli_test_fns.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.cli_test_fns.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs and styles tests of whether formats are supported by gdal and ogr.
+:param ogr_include: an iterable of str format names to check are included in
+:param ogr:
+:param ogr_exclude: an iterable of str format names to check are included in
+:param ogr:
+:param gdal_include: an iterable of str format names to check are included in
+:param gdal:
+:param gdal_exclude: an iterable of str format names to check are included in
+:param gdal:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.cli_test_fns.style_check">
+<code class="descclassname">gdal_build_debug.cli_test_fns.</code><code class="descname">style_check</code><span class="sig-paren">(</span><em>cli</em>, <em>to_check</em>, <em>is_present=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/cli_test_fns.html#style_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.cli_test_fns.style_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the styled results of testing whether a format is included.
+:param cli: the str &#8216;gdalinfo&#8217; or &#8216;ogrinfo&#8217;: which command-line interface to
+:param test.:
+:param to_check: the str format to check is supported by the gdal cli.
+:param is_present: whether or not the format should be present</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the boolean value of whether or not the test succeeded.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">test_success</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.cli_test_fns.test_version_is">
+<code class="descclassname">gdal_build_debug.cli_test_fns.</code><code class="descname">test_version_is</code><span class="sig-paren">(</span><em>expected</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/cli_test_fns.html#test_version_is"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.cli_test_fns.test_version_is" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the gdal command-line version is the version you expect.
+:param expected: a str version number of the form
+:param major_num.minor_num.patch_num:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the boolean value of whether the expected version matched
+the actual command-line version.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">test_success</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-gdal_build_debug.config_test_fns"></span><dl class="function">
+<dt id="gdal_build_debug.config_test_fns.check_lines">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">check_lines</code><span class="sig-paren">(</span><em>filter_fn</em>, <em>test_fn</em>, <em>config_log_lines</em>, <em>essential=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#check_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.check_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pipes all lines through the filter- and test_fns, returns the resulting
+list of tuples</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.check_result">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">check_result</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#check_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.check_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a boolean whether the test passed or encountered fatal failures.
+:param data: a list of tuples of the form (_, (str result, _), _, bool
+:param essential):</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>A boolean value whether all tests of essential lines or all test of</dt>
+<dd>non-essential lines succeeded</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.default_filter">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">default_filter</code><span class="sig-paren">(</span><em>query</em>, <em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#default_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.default_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string to test iff the query matches the line</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.default_test">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">default_test</code><span class="sig-paren">(</span><em>response</em>, <em>present=True</em>, <em>accept_internal=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#default_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.default_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a test response tuple based on a given response string</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.get_failure">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">get_failure</code><span class="sig-paren">(</span><em>match</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#get_failure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.get_failure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a matched failure condition or None.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.get_group">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">get_group</code><span class="sig-paren">(</span><em>match</em>, <em>*names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#get_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.get_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the first resolved regex match group from the given identifiers
+:param match: a re.match object
+:param names: multiple int or str group indexes/names, in the order they
+:param should be tried:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tuple of the start and end indexes of the match group</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.get_pass">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">get_pass</code><span class="sig-paren">(</span><em>match</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#get_pass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.get_pass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a matched pass condition or None.
+contains no group index since as an optional value, it must be explicityly
+named</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.get_success">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">get_success</code><span class="sig-paren">(</span><em>match</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#get_success"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.get_success" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a matched success condition or None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.is_regex_str">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">is_regex_str</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#is_regex_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.is_regex_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>a naive check of whether a str is intended to be regex</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.main">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">main</code><span class="sig-paren">(</span><em>config_log</em>, <em>lib_present</em>, <em>lib_absent</em>, <em>searches</em>, <em>accept_internal=True</em>, <em>level=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a string config_log, and an iterable of queries (either supported
+libraries or custom searches), runs the full &#8216;test suite&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.make_search">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">make_search</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#make_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.make_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a filter function based on a query</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.make_test">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">make_test</code><span class="sig-paren">(</span><em>query</em>, <em>present=True</em>, <em>accept_internal=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#make_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.make_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a test function of whether a passed line succeeded or not</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.regex_filter">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">regex_filter</code><span class="sig-paren">(</span><em>query</em>, <em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#regex_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.regex_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a regex match or None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.style_result">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">style_result</code><span class="sig-paren">(</span><em>line_num</em>, <em>test_output</em>, <em>line</em>, <em>essential</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#style_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.style_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>echoes lines related to a test result with ANSI colors
+:param line_num: 1-indexed int
+:param test_output: a tuple (str or NoneType , (int start, int end))
+:param line: the entire str line that was tested
+:param essential: boolean value of whether the line is essential to package
+:param inclusion:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gdal_build_debug.config_test_fns.style_results">
+<code class="descclassname">gdal_build_debug.config_test_fns.</code><code class="descname">style_results</code><span class="sig-paren">(</span><em>results</em>, <em>quiet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gdal_build_debug/config_test_fns.html#style_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gdal_build_debug.config_test_fns.style_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Echoes styled results to the command line and returns a boolean, whether
+all tests passed.
+:param results: a dict mapping search name to a list of tuples representing
+:param tested lines:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a boolean, whether all tests passed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="readme.html"
+                        title="previous chapter">gdal_build_debug</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="next chapter">Installation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/code.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="readme.html" title="gdal_build_debug"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">gdal_build_debug 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Steven Kalt.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+    </div>
+  </body>
+</html>
