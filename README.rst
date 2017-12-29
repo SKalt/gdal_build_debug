@@ -26,27 +26,31 @@ https://trac.osgeo.org/gdal/wiki/BuildingOnUnix
 USAGE
 +++++
 
-`gdal_build_debug` is to be used on the command line::
-gdal_build_debug [OPTIONS] COMMAND [ARGS]...
+:code:`gdal_build_debug` is to be used on the command line: ::
+    
+    gdal_build_debug [OPTIONS] COMMAND [ARGS]...
 
-Options:
---help  Show this message and exit.
+    Options:
+    --help  Show this message and exit.
 
-Commands:
-test
+    Commands:
+   test
 
 EXAMPLES
 --------
-gdal_build_debug --with postgis test --formats
-gdal_build_debug --without postgis test --formats
-gdal_build_debug test --formats with:postgis without:spatialite
+.. code::
 
-gdal_build_debug test --dependencies with:spatialite
-gdal_build_debug test --dependencies --formats with:geos with:geojson
-# tests whether the configuration log includes the GEOS dependency and the command line supports the geojson format
+    gdal_build_debug --with postgis test --formats
 
-gdal_build_debug test --version-is=2.2.*
-# match the version via regex
+    gdal_build_debug --without postgis test --formats
+    gdal_build_debug test --formats with:postgis without:spatialite
+
+    gdal_build_debug test --dependencies with:spatialite
+    gdal_build_debug test --dependencies --formats with:geos with:geojson
+    # tests whether the configuration log includes the GEOS dependency and the command line supports the geojson format
+
+    gdal_build_debug test --version-is=2.2.*
+    # match the version via regex
 
 
 
